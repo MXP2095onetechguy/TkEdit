@@ -3,3 +3,7 @@
 __pycache__/
 build/
 dist/
+
+# ionide
+.fake
+.ionide
