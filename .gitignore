@@ -1,0 +1,5 @@
+# Very scary .gitignore
+
+__pycache__/
+build/
+dist/

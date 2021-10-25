@@ -1,0 +1,3 @@
+Run the mkico script
+
+then run the setup.py
