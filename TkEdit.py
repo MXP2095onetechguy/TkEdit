@@ -81,6 +81,7 @@ import os
 from hashlib import md5
 import sys
 import requests
+import argparse
 
 class LessViewer(tk.Toplevel):
     def __init__(self, parent, text, font, **kwargs):
@@ -109,8 +110,9 @@ class Document:
         self.status = md5(self.textbox.get(1.0, 'end').encode('utf-8'))
         
 class Editor:
-    def __init__(self, master, assetDir, font, **kwargs):
+    def __init__(self, master, assetDir, font, firstfile=None, **kwargs):
         self.master = master
+        # print(firstfile)
 
         self.font = font
 
@@ -130,7 +132,10 @@ class Editor:
         self.ImageExit = Image.open(os.path.join(self.assetPath, "Exit.png"))
         self.ImageTkExit = ImageTk.PhotoImage(self.ImageExit)
 
-        self.toolbar = tk.Frame(self.fm, relief=tk.RAISED, bd=1)
+        self.toolbarfm = tk.Frame(self.fm)
+        self.toolbarfm.pack(fill=tk.X, side=tk.TOP)
+
+        self.toolbar = tk.Frame(self.toolbarfm, relief=tk.RAISED, bd=1)
         self.toolbar_pack()
 
         self.toolbar_right_click_menu = tk.Menu(self.master, tearoff=0)
@@ -272,13 +277,23 @@ class Editor:
         # self.statusbar.scrollbar["command"] = self.statusbar.fmfm.xview
 
         # Create Initial Tab
-        first_tab = ttk.Frame(self.nb)
-        doc = Document( first_tab, None )
-        doc.textbox =self.create_text_widget(first_tab, doc)
-        doc.Mk5()
-        self.tabs[ first_tab ] = doc
-        self.nb.add(first_tab, text='Untitled')
-        self.UpdateStatusFile("New file buffer generated") 
+        if firstfile:
+            if not self.openfs(firstfile):
+                first_tab = ttk.Frame(self.nb)
+                doc = Document( first_tab, None )
+                doc.textbox =self.create_text_widget(first_tab, doc)
+                doc.Mk5()
+                self.tabs[ first_tab ] = doc
+                self.nb.add(first_tab, text='Untitled')
+                self.UpdateStatusFile("New file buffer generated")
+        else:
+            first_tab = ttk.Frame(self.nb)
+            doc = Document( first_tab, None )
+            doc.textbox =self.create_text_widget(first_tab, doc)
+            doc.Mk5()
+            self.tabs[ first_tab ] = doc
+            self.nb.add(first_tab, text='Untitled')
+            self.UpdateStatusFile("New file buffer generated") 
 
     def create_text_widget(self, frame, document):
         # Horizontal Scroll Bar 
@@ -330,7 +345,10 @@ class Editor:
         file_dir = (tkinter
          .filedialog
          .askopenfilename(initialdir=self.init_dir, title="Select file", filetypes=self.filetypes))
-        
+
+        return self.openfs(file_dir)
+
+    def openfs(self, file_dir):
         # If directory is not the empty string, try to open the file. 
         if file_dir:
             try:
@@ -353,12 +371,14 @@ class Editor:
                 self.tabs[ new_tab ].status = md5(self.tabs[ new_tab ].textbox.get(1.0, 'end').encode('utf-8'))
 
                 self.UpdateStatusFile("Opened from local filesystem")
+                return True
             except Exception as e:
                 self.UpdateStatusFile("Failed to open from local filesystem")
                 messagebox.showerror("File open error", str(e))
-                return
+                return False
         else:
             self.UpdateStatusFile("Cancled to open file from local filesystem")
+            return False
 
     def save_as(self):
         curr_tab = self.get_tab()
@@ -616,13 +636,22 @@ class Editor:
                 return
 
 
-
+# open tkinter.tk
 win = tk.Tk()
+# make argument parser
+win.argparse = argparse.ArgumentParser()
+win.argparse.add_argument('-f', '--file', action='store', help="File input", dest="file", type=str, default=None, metavar="\"File here\"")
+# parse args
+win.args, win.unknownargs = win.argparse.parse_known_args(sys.argv)
+# configuration
 win.asset = "asset"
 win.helv36 = tkf.Font(family="Microsoft Sans Serif",size=8)
 win.assetPath = os.path.join(os.getcwd(), win.asset)
 win.title("TkEdit")
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
-win.app = Editor(win, assetDir=win.asset, font=win.helv36)
+# make editor
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file)
+# mainloop
 win.mainloop()
+# Exit
 sys.exit(0)
