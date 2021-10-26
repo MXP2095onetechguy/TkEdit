@@ -250,17 +250,26 @@ class Editor:
         self.statusbar = tk.Frame(self.editfm)
         self.statusbar.pack(fill=tk.X, side=tk.BOTTOM)
 
-        self.statusbar.fm1 = tk.Frame(self.statusbar, relief=tk.SUNKEN, bd=1)
-        self.statusbar.fm1.pack(side=tk.LEFT, expand=1)
+        self.statusbar.fmfm = tk.Frame(self.statusbar)
+        self.statusbar.fmfm.pack(fill=tk.X, side=tk.TOP)
 
-        self.statusbar.fm1.label = tk.Label(self.statusbar.fm1, text="A")
-        self.statusbar.fm1.label.pack(side=tk.LEFT, expand=1)
+        self.statusbar.fmfm.fm1 = tk.Frame(self.statusbar.fmfm, relief=tk.SUNKEN, bd=1)
+        self.statusbar.fmfm.fm1.pack(side=tk.LEFT, expand=1, fill=tk.X)
+        # self.statusbar.fmfm.fm1.grid(row=0, column=0)
 
-        self.statusbar.fm2 = tk.Frame(self.statusbar, relief=tk.SUNKEN, bd=1)
-        self.statusbar.fm2.pack(side=tk.LEFT, expand=1)
+        self.statusbar.fmfm.fm1.label = tk.Label(self.statusbar.fmfm.fm1, text="A")
+        self.statusbar.fmfm.fm1.label.pack(side=tk.LEFT, expand=1)
 
-        self.statusbar.fm2.label = tk.Label(self.statusbar.fm2, text="A")
-        self.statusbar.fm2.label.pack(side=tk.LEFT, expand=1)
+        self.statusbar.fmfm.fm2 = tk.Frame(self.statusbar.fmfm, relief=tk.SUNKEN, bd=1)
+        self.statusbar.fmfm.fm2.pack(side=tk.LEFT, expand=1, fill=tk.X)
+        # self.statusbar.fmfm.fm2.grid(row=0, column=1)
+
+        self.statusbar.fmfm.fm2.label = tk.Label(self.statusbar.fmfm.fm2, text="A")
+        self.statusbar.fmfm.fm2.label.pack(side=tk.LEFT, expand=1)
+
+        self.statusbar.scrollbar = tk.Scrollbar(self.statusbar, orient=tk.HORIZONTAL)
+        # self.statusbar.scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+        # self.statusbar.scrollbar["command"] = self.statusbar.fmfm.xview
 
         # Create Initial Tab
         first_tab = ttk.Frame(self.nb)
@@ -311,10 +320,10 @@ class Editor:
 
     def UpdateStatusMouse(self, mousepos, document):
         # print(mousepos)
-        self.statusbar.fm1.label["text"] = 'Line/Row: ' + mousepos.split('.')[0] + '. Charater/Column: ' + mousepos.split('.')[1] + ". Document " + str(document.file_name) + "."
+        self.statusbar.fmfm.fm1.label["text"] = 'Line/Row: ' + mousepos.split('.')[0] + '. Charater/Column: ' + mousepos.split('.')[1] + ". Document " + str(document.file_name) + "."
 
     def UpdateStatusFile(self, status):
-        self.statusbar.fm2.label["text"] = "File status: " + status
+        self.statusbar.fmfm.fm2.label["text"] = "File status: " + status
 
     def open_file(self, *args):        
         # Open a window to browse to the file you would like to open, returns the directory.
