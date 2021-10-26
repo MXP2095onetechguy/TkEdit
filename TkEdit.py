@@ -83,6 +83,7 @@ import sys
 import requests
 import argparse
 import tkinterdnd2 as tkdnd
+import tooltip
 
 class LessViewer(tk.Toplevel):
     def __init__(self, parent, text, font, **kwargs):
