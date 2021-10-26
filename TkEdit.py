@@ -297,6 +297,9 @@ class Editor:
             self.UpdateStatusFile("New file buffer generated") 
 
         # dnd binding
+        # self.nb.drop_target_register(tkdnd.DND_FILES)
+        # self.nb.dnd_bind('<<Drop>>', lambda e: self.openfs( e.data.strip("{").strip("}") ))
+	
         # self.nb.dnd_bind('<<Drop>>', lambda e: self.openfs(e.data))
         # self.nb.dnd_bind('<<Drop>>', lambda e: print(e))
 
@@ -324,8 +327,8 @@ class Editor:
         textbox.bind('<KeyPress>', lambda e: self.UpdateStatusMouse(textbox.index('current'), document))
 
         # drag and drop bind
-        textbox.drop_target_register(tkdnd.DND_FILES)
-        textbox.dnd_bind('<<Drop>>', lambda e: self.openfs( e.data.strip("{").strip("}") ))
+        # textbox.drop_target_register(tkdnd.DND_FILES)
+        # textbox.dnd_bind('<<Drop>>', lambda e: self.openfs( e.data.strip("{").strip("}") ))
 
         self.UpdateStatusMouse(textbox.index('current'), document)
 
@@ -645,8 +648,10 @@ class Editor:
                 return
 
 
-# open tkinter.tk
+# open tkinterdnd.tk
 win = tkdnd.TkinterDnD.Tk()
+# add dnd to window
+win.drop_target_register(tkdnd.DND_FILES)
 # make argument parser
 win.argparse = argparse.ArgumentParser()
 win.argparse.add_argument('-f', '--file', action='store', help="File input", dest="file", type=str, default="", metavar="\"File here\"")
@@ -665,7 +670,10 @@ win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png"))
 # print(win.args)
 # make editor
 win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None)
+# register dnd to window
+win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
 # mainloop
 win.mainloop()
 # Exit
 sys.exit(0)
+
