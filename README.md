@@ -9,3 +9,5 @@ Website [at](https://mxp2095onetechguy.github.io/TkEdit/)
 Tri licensed
 
 Refer to howtobuild.txt for building an executable
+
+Pipreqs is used to generate requirments.txt
