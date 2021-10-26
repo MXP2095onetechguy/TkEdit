@@ -640,17 +640,22 @@ class Editor:
 win = tk.Tk()
 # make argument parser
 win.argparse = argparse.ArgumentParser()
-win.argparse.add_argument('-f', '--file', action='store', help="File input", dest="file", type=str, default=None, metavar="\"File here\"")
+win.argparse.add_argument('-f', '--file', action='store', help="File input", dest="file", type=str, default="", metavar="\"File here\"")
+win.argparse.add_argument('dfile', action='store', help="File input for drag and drop", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
 # parse args
+win.argv = sys.argv
+sys.argv.pop(0)
 win.args, win.unknownargs = win.argparse.parse_known_args(sys.argv)
+sys.argv = win.argv
 # configuration
 win.asset = "asset"
 win.helv36 = tkf.Font(family="Microsoft Sans Serif",size=8)
 win.assetPath = os.path.join(os.getcwd(), win.asset)
 win.title("TkEdit")
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
+# print(win.args)
 # make editor
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file)
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None)
 # mainloop
 win.mainloop()
 # Exit
