@@ -82,6 +82,7 @@ from hashlib import md5
 import sys
 import requests
 import argparse
+import tkinterdnd2 as tkdnd
 
 class LessViewer(tk.Toplevel):
     def __init__(self, parent, text, font, **kwargs):
@@ -295,6 +296,10 @@ class Editor:
             self.nb.add(first_tab, text='Untitled')
             self.UpdateStatusFile("New file buffer generated") 
 
+        # dnd binding
+        # self.nb.dnd_bind('<<Drop>>', lambda e: self.openfs(e.data))
+        # self.nb.dnd_bind('<<Drop>>', lambda e: print(e))
+
     def create_text_widget(self, frame, document):
         # Horizontal Scroll Bar 
         xscrollbar = tk.Scrollbar(frame, orient='horizontal')
@@ -317,6 +322,10 @@ class Editor:
         textbox.bind('<Button-3>', self.right_click)
         textbox.bind('<KeyRelease>', lambda e: self.UpdateStatusMouse(textbox.index('current'), document))
         textbox.bind('<KeyPress>', lambda e: self.UpdateStatusMouse(textbox.index('current'), document))
+
+        # drag and drop bind
+        textbox.drop_target_register(tkdnd.DND_FILES)
+        textbox.dnd_bind('<<Drop>>', lambda e: self.openfs( e.data.strip("{").strip("}") ))
 
         self.UpdateStatusMouse(textbox.index('current'), document)
 
@@ -637,7 +646,7 @@ class Editor:
 
 
 # open tkinter.tk
-win = tk.Tk()
+win = tkdnd.TkinterDnD.Tk()
 # make argument parser
 win.argparse = argparse.ArgumentParser()
 win.argparse.add_argument('-f', '--file', action='store', help="File input", dest="file", type=str, default="", metavar="\"File here\"")

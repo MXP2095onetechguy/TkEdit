@@ -1,0 +1,4 @@
+requests==2.25.1
+tkinterdnd2==0.3.0
+cx_Freeze==6.8.1
+Pillow==8.4.0

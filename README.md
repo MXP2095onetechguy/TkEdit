@@ -8,4 +8,4 @@ Website [at](https://mxp2095onetechguy.github.io/TkEdit/)
 
 Tri licensed
 
-Install Pillow only if you don't have it
+Refer to howtobuild.txt for building an executable
