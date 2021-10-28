@@ -87,6 +87,8 @@ import tooltip
 import Pmw
 import webbrowser
 import witkets as wtk
+import cnb
+import time
 
 class LessViewer(tk.Toplevel):
     def __init__(self, parent, text, font, **kwargs):
@@ -104,6 +106,34 @@ class LessViewer(tk.Toplevel):
 
         self.exit = tk.Button(self.fm, text="Exit", command=self.destroy)
         self.exit.pack()
+
+class GoodBookForThisPurpose(cnb.BetterCustomNotebook):
+    def __init__(self, oncloseall, master, enbSelf, *args, **kwargs):
+        super().__init__(oncloseall, master, *args, **kwargs)
+        self.enbSelf = enbSelf
+
+    def on_close_release(self, event):
+        """Called when the button is released"""
+        if self.enbSelf.save_changes():
+            if not self.instate(['pressed']):
+                return
+
+            element =  self.identify(event.x, event.y)
+            if "close" not in element:
+                # user moved the mouse off of the close button
+                return
+
+            index = self.index("@%d,%d" % (event.x, event.y))
+
+            if self._active == index:
+                self.forget(index)
+                self.event_generate("<<NotebookTabClosed>>")
+
+            self.state(["!pressed"])
+            self._active = None
+
+            if self.index("end") == 0:
+                self.oncloseall()
 
 class Document:
     def __init__(self, Frame, TextWidget, FileDir=''):
@@ -158,7 +188,7 @@ class Editor:
         self.RibbonToolbar_right_click_menu.add_command(label="Open from WebRequest", command=self.webrequest)
         self.RibbonToolbar_right_click_menu.add_command(label="Quit", command=self.exit)
         self.RibbonToolbar_right_click_menu.add_separator()
-        self.RibbonToolbar_right_click_menu.add_command(label="Hide toolbar", command=self.RibbonToolbar_unpack)
+        self.RibbonToolbar_right_click_menu.add_command(label="Hide Ribbon", command=self.RibbonToolbar_unpack)
         self.RibbonToolbar.bind('<Button-3>', self.right_click_toolbar)
 
         self.RibbonToolbar.maintab.Editor.exit = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Exit.png"), text="Exit")
@@ -289,12 +319,14 @@ class Editor:
         self.editfm.pack(expand=1, fill=tk.BOTH)
         
         # Create Notebook ( for tabs ).
-        self.nb = ttk.Notebook(self.editfm)
+        self.nb = GoodBookForThisPurpose(self.exit, self.editfm, self)
         self.nb.bind("<Button-2>", self.close_tab)
         self.nb.bind("<B1-Motion>", self.move_tab)
         self.nb.pack(expand=1, fill=tk.BOTH, side=tk.TOP)
         self.nb.enable_traversal()
         #self.nb.bind('<<NotebookTabChanged>>', self.tab_change)
+
+        # time.sleep(1)
 
         # Override the X button.
         self.master.protocol('WM_DELETE_WINDOW', self.exit)
@@ -324,7 +356,7 @@ class Editor:
         editmenu.add_command(label="Delete", command=self.delete)
         editmenu.add_command(label="Select All", command=self.select_all)
         editmenu.add_separator()
-        editmenu.add_command(label="Show Toolbar", command=self.RibbonToolbar_pack)
+        editmenu.add_command(label="Show Ribbon", command=self.RibbonToolbar_pack)
         
         # Create Format Menu, with a check button for word wrap.
         formatmenu = tk.Menu(menubar, tearoff=0)
@@ -363,7 +395,6 @@ class Editor:
 
         # create status bar
         self.statusbar = tk.Frame(self.editfm)
-        self.statusbar.pack(fill=tk.X, side=tk.BOTTOM)
 
         self.statusbar.fmfm = tk.Frame(self.statusbar)
         self.statusbar.fmfm.pack(fill=tk.X, side=tk.TOP)
@@ -385,6 +416,7 @@ class Editor:
         self.statusbar.scrollbar = tk.Scrollbar(self.statusbar, orient=tk.HORIZONTAL)
         # self.statusbar.scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         # self.statusbar.scrollbar["command"] = self.statusbar.fmfm.xview
+        self.statusbar.pack(fill=tk.X, side=tk.BOTTOM)
 
         # Create Initial Tab
         if firstfile:
@@ -463,8 +495,7 @@ class Editor:
 
     def open_file(self, *args):        
         # Open a window to browse to the file you would like to open, returns the directory.
-        file_dir = (tkinter
-         .filedialog
+        file_dir = (tkfd
          .askopenfilename(initialdir=self.init_dir, title="Select file", filetypes=self.filetypes))
 
         return self.openfs(file_dir)
@@ -505,8 +536,7 @@ class Editor:
         curr_tab = self.get_tab()
     
         # Gets file directory and name of file to save.
-        file_dir = (tkinter
-         .filedialog
+        file_dir = (tkfd
          .asksaveasfilename(initialdir=self.init_dir, title="Select file", filetypes=self.filetypes, defaultextension='.txt'))
         
         # Return if directory is still empty (user closes window without specifying file name).
@@ -822,11 +852,15 @@ win.title("TkEdit")
 win.srcurl = "https://github.com/MXP2095onetechguy/TkEdit"
 win.wtkstyle = wtk.Style()
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
+# hide window
+win.withdraw()
 # print(win.args)
 # make editor
 win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, wtkstyle=win.wtkstyle)
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
+# show window
+win.deiconify()
 # mainloop
 win.mainloop()
 # Exit
