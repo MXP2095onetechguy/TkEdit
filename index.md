@@ -8,3 +8,9 @@ Written in python with tkinter.
 
 Here is TkEdit editting it's source code
 ![TkEdit editting itself](TkEditSelf.jpg)
+
+
+
+<br>
+
+How to [build](HowToBuild.md), visit the link in this sentence!
