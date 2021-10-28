@@ -71,9 +71,9 @@
 
 import tkinter as tk
 from tkinter import ttk
-import tkinter.filedialog
-from tkinter import messagebox
-from tkinter import simpledialog
+import tkinter.filedialog as tkfd
+from tkinter import messagebox as tkmb
+from tkinter import simpledialog as tksd
 import tkinter.font as tkf
 import tkinter.scrolledtext as tkst
 from PIL import Image, ImageTk, ImageGrab
@@ -84,6 +84,9 @@ import requests
 import argparse
 import tkinterdnd2 as tkdnd
 import tooltip
+import Pmw
+import webbrowser
+import witkets as wtk
 
 class LessViewer(tk.Toplevel):
     def __init__(self, parent, text, font, **kwargs):
@@ -112,11 +115,17 @@ class Document:
         self.status = md5(self.textbox.get(1.0, 'end').encode('utf-8'))
         
 class Editor:
-    def __init__(self, master, assetDir, font, firstfile=None, **kwargs):
+    def __init__(self, master, assetDir, font, firstfile, srcurl, wtkstyle, **kwargs):
         self.master = master
         # print(firstfile)
 
         self.font = font
+
+        self.wtkstyle = wtkstyle
+        wtk.Style.set_default_fonts()
+        self.wtkstyle.apply_default()
+
+        self.srcurl = srcurl
 
         self.assetPath = os.path.join(os.getcwd(), assetDir)
 
@@ -131,52 +140,144 @@ class Editor:
         # self.fm.timer.t1.after(20, self.UpdateStatus)
 
         # create toolbar
-        self.ImageExit = Image.open(os.path.join(self.assetPath, "Exit.png"))
-        self.ImageTkExit = ImageTk.PhotoImage(self.ImageExit)
+        # self.ImageExit = Image.open(os.path.join(self.assetPath, "Exit.png"))
+        # self.ImageTkExit = ImageTk.PhotoImage(self.ImageExit)
 
-        self.toolbarfm = tk.Frame(self.fm)
-        self.toolbarfm.pack(fill=tk.X, side=tk.TOP)
+        self.RibbonToolbarfm = tk.Frame(self.fm)
+        self.RibbonToolbarfm.pack(fill=tk.X, side=tk.TOP)
 
-        self.toolbar = tk.Frame(self.toolbarfm, relief=tk.RAISED, bd=1)
-        self.toolbar_pack()
+        self.RibbonToolbar = wtk.Ribbon(self.RibbonToolbarfm)
+        self.RibbonToolbar_pack()
 
-        self.toolbar_right_click_menu = tk.Menu(self.master, tearoff=0)
-        self.toolbar_right_click_menu.add_command(label="Open from WebRequest", command=self.webrequest)
-        self.toolbar_right_click_menu.add_command(label="Quit", command=self.exit)
-        self.toolbar_right_click_menu.add_separator()
-        self.toolbar_right_click_menu.add_command(label="Hide toolbar", command=self.toolbar_unpack)
-        self.toolbar.bind('<Button-3>', self.right_click_toolbar)
-
-        self.toolbar.exit = tk.Button(self.toolbar, relief=tk.FLAT, command=self.exit, image=self.ImageTkExit)
-        self.toolbar.exit.pack(side=tk.LEFT, padx=2, pady=2)
-
-        self.ImageClose = Image.open(os.path.join(self.assetPath, "Close.png"))
-        self.ImageTkClose = ImageTk.PhotoImage(self.ImageClose)
-
-        self.toolbar.close = tk.Button(self.toolbar, relief=tk.FLAT, command=self.close_tab, image=self.ImageTkClose)
-        self.toolbar.close.pack(side=tk.LEFT, padx=2, pady=2)
-
-        self.toolbar.separator = tk.Label(self.toolbar, text="|")
-        self.toolbar.separator.pack(side=tk.LEFT, padx=2, pady=2)
-
-        self.ImageNew = Image.open(os.path.join(self.assetPath, "New.png"))
-        self.ImageTkNew = ImageTk.PhotoImage(self.ImageNew)
-
-        self.toolbar.new = tk.Button(self.toolbar, relief=tk.FLAT, image=self.ImageTkNew, command=self.new_file)
-        self.toolbar.new.pack(side=tk.LEFT, padx=2, pady=2)
+        self.RibbonToolbar.maintab = self.RibbonToolbar.add_tab('Main Document')
+        self.RibbonToolbar.maintab.Editor = self.RibbonToolbar.maintab.create_h_group("Editor")
 
 
-        self.ImageOpenL = Image.open(os.path.join(self.assetPath, "Open.png"))
-        self.ImageTkOpenL = ImageTk.PhotoImage(self.ImageOpenL)
 
-        self.toolbar.openlocal = tk.Button(self.toolbar, relief=tk.FLAT, command=self.open_file, image=self.ImageTkOpenL)
-        self.toolbar.openlocal.pack(side=tk.LEFT, padx=2, pady=2)
+        self.RibbonToolbar_right_click_menu = tk.Menu(self.master, tearoff=0)
+        self.RibbonToolbar_right_click_menu.add_command(label="Open from WebRequest", command=self.webrequest)
+        self.RibbonToolbar_right_click_menu.add_command(label="Quit", command=self.exit)
+        self.RibbonToolbar_right_click_menu.add_separator()
+        self.RibbonToolbar_right_click_menu.add_command(label="Hide toolbar", command=self.RibbonToolbar_unpack)
+        self.RibbonToolbar.bind('<Button-3>', self.right_click_toolbar)
 
-        self.ImageWebRq = Image.open(os.path.join(self.assetPath, "WebRq.png"))
-        self.ImageTkWebRq = ImageTk.PhotoImage(self.ImageWebRq)
+        self.RibbonToolbar.maintab.Editor.exit = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Exit.png"), text="Exit")
+        self.RibbonToolbar.maintab.Editor.exit["command"] = self.exit
+        # self.RibbonToolbar.exit.pack(side=tk.LEFT, padx=2, pady=2)
+        self.RibbonToolbar.maintab.Editor.exit.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.exit, text="Exit the editor")
 
-        self.toolbar.WebRq = tk.Button(self.toolbar, relief=tk.FLAT, command=self.webrequest, image=self.ImageTkWebRq)
-        self.toolbar.WebRq.pack(side=tk.LEFT, padx=2, pady=2)
+        # self.ImageClose = Image.open(os.path.join(self.assetPath, "Close.png"))
+        # self.ImageTkClose = ImageTk.PhotoImage(self.ImageClose)
+
+        # self.RibbonToolbar.close = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.close_tab, image=self.ImageTkClose)
+        # self.RibbonToolbar.close.pack(side=tk.LEFT, padx=2, pady=2)
+        # self.RibbonToolbar.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.close, text="Close the open tab", waittime=250)
+        self.RibbonToolbar.maintab.Editor.close = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Close.png"), text="Close")
+        self.RibbonToolbar.maintab.Editor.close["command"] = self.close_tab
+        self.RibbonToolbar.maintab.Editor.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.close, text="Close the open tab", waittime=250)
+
+        # self.RibbonToolbar.separator = tk.Label(self.RibbonToolbar, text="|")
+        # self.RibbonToolbar.separator.pack(side=tk.LEFT, padx=2, pady=2)
+
+        # self.ImageNew = Image.open(os.path.join(self.assetPath, "New.png"))
+        # self.ImageTkNew = ImageTk.PhotoImage(self.ImageNew)
+
+        self.RibbonToolbar.maintab.OpenNew = self.RibbonToolbar.maintab.create_h_group("Open and New")
+
+        # self.RibbonToolbar.new = tk.Button(self.RibbonToolbar, relief=tk.FLAT, image=self.ImageTkNew, command=self.new_file)
+        # self.RibbonToolbar.new.pack(side=tk.LEFT, padx=2, pady=2)
+        # self.RibbonToolbar.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.new, text="New tab for new file")
+
+        self.RibbonToolbar.maintab.OpenNew.new = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "New.png"), text="New")
+        self.RibbonToolbar.maintab.OpenNew.new["command"] = self.new_file
+        self.RibbonToolbar.maintab.OpenNew.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.new, text="New tab for new file")
+
+
+        # self.ImageOpenL = Image.open(os.path.join(self.assetPath, "Open.png"))
+        # self.ImageTkOpenL = ImageTk.PhotoImage(self.ImageOpenL)
+
+        # self.RibbonToolbar.openlocal = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.open_file, image=self.ImageTkOpenL)
+        # self.RibbonToolbar.openlocal.pack(side=tk.LEFT, padx=2, pady=2)
+        # self.RibbonToolbar.openlocal.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.openlocal, text="Open from local filesystem")
+
+        self.RibbonToolbar.maintab.OpenNew.openlocal = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "Open.png"), text="Open")
+        self.RibbonToolbar.maintab.OpenNew.openlocal["command"] = self.open_file
+        self.RibbonToolbar.maintab.OpenNew.openlocal = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.openlocal, text="Open from local filesystem")
+
+        # self.ImageWebRq = Image.open(os.path.join(self.assetPath, "WebRq.png"))
+        # self.ImageTkWebRq = ImageTk.PhotoImage(self.ImageWebRq)
+
+        # self.RibbonToolbar.WebRq = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.webrequest, image=self.ImageTkWebRq)
+        # self.RibbonToolbar.WebRq.pack(side=tk.LEFT, padx=2, pady=2)
+        # self.RibbonToolbar.WebRq.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.WebRq, text="Open by fecthing from web")
+
+        self.RibbonToolbar.maintab.OpenNew.WebRq = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "WebRq.png"), text="WebRequest")
+        self.RibbonToolbar.maintab.OpenNew.WebRq["command"] = self.webrequest
+        self.RibbonToolbar.maintab.OpenNew.WebRq = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.WebRq, text="Open by fecthing from web")
+
+        # self.RibbonToolbar.separator2 = tk.Label(self.RibbonToolbar, text="|")
+        # self.RibbonToolbar.separator2.pack(side=tk.LEFT, padx=2, pady=2)
+
+        self.RibbonToolbar.maintab.FileWritter = self.RibbonToolbar.maintab.create_h_group("File Writter")
+
+        # self.ImageSave = Image.open(os.path.join(self.assetPath, "save.png"))
+        # self.ImageTkSave = ImageTk.PhotoImage(self.ImageSave)
+
+        # self.RibbonToolbar.Save = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.save_file, image=self.ImageTkSave)
+        # self.RibbonToolbar.Save.pack(side=tk.LEFT, padx=2, pady=2)
+        # self.RibbonToolbar.Save.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.Save, text="Save file")
+
+        self.RibbonToolbar.maintab.FileWritter.Save = self.RibbonToolbar.maintab.FileWritter.create_toolbar_item(os.path.join(self.assetPath, "save.png"), text="Save")
+        self.RibbonToolbar.maintab.FileWritter.Save["command"] = self.save_file
+        self.RibbonToolbar.maintab.FileWritter.Save = tooltip.CreateToolTip(self.RibbonToolbar.maintab.FileWritter.Save, text="Save file")
+
+        # self.ImageSaveAs = Image.open(os.path.join(self.assetPath, "saveas.png"))
+        # self.ImageTkSaveAs = ImageTk.PhotoImage(self.ImageSaveAs)
+
+        # self.RibbonToolbar.SaveAs = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.save_as, image=self.ImageTkSaveAs)
+        # self.RibbonToolbar.SaveAs.pack(side=tk.LEFT, padx=2, pady=2)
+        # self.RibbonToolbar.SaveAs.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.SaveAs, text="Save file as")
+
+        self.RibbonToolbar.maintab.FileWritter.SaveAs = self.RibbonToolbar.maintab.FileWritter.create_toolbar_item(os.path.join(self.assetPath, "saveas.png"), text="Save As")
+        self.RibbonToolbar.maintab.FileWritter.SaveAs["command"] = self.save_as
+        self.RibbonToolbar.maintab.FileWritter.SaveAs = tooltip.CreateToolTip(self.RibbonToolbar.maintab.FileWritter.SaveAs, text="Save file as")
+
+        self.RibbonToolbar.edittab = self.RibbonToolbar.add_tab('Edit')
+
+        self.RibbonToolbar.edittab.Clipboard = self.RibbonToolbar.edittab.create_h_group("Clipboard")
+
+        self.RibbonToolbar.edittab.Clipboard.cut = self.RibbonToolbar.edittab.Clipboard.create_toolbar_item(os.path.join(self.assetPath, "Cut.png"), text="Cut")
+        self.RibbonToolbar.edittab.Clipboard.cut["command"] = self.cut
+        self.RibbonToolbar.edittab.Clipboard.cut.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Clipboard.cut, text="Delete the selected text, but copy it to the clipboard before it gets deleted")
+
+        self.RibbonToolbar.edittab.Clipboard.copy = self.RibbonToolbar.edittab.Clipboard.create_toolbar_item(os.path.join(self.assetPath, "copy.png"), text="copy")
+        self.RibbonToolbar.edittab.Clipboard.copy["command"] = self.copy
+        self.RibbonToolbar.edittab.Clipboard.copy.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Clipboard.copy, text="Copy the text to the clipboard")
+
+        self.RibbonToolbar.edittab.Clipboard.paste = self.RibbonToolbar.edittab.Clipboard.create_toolbar_item(os.path.join(self.assetPath, "paste.png"), text="paste")
+        self.RibbonToolbar.edittab.Clipboard.paste["command"] = self.paste
+        self.RibbonToolbar.edittab.Clipboard.paste.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Clipboard.paste, text="Paste from the clipboard")
+        
+        # self.RibbonToolbar.edittab.Clipboard.cut = self.RibbonToolbar.edittab.Clipboard.create_toolbar_item(os.path.join(self.assetPath, "Cut.png"), text="Cut")
+        # self.RibbonToolbar.edittab.Clipboard.cut["command"] = self.cut
+        # self.RibbonToolbar.edittab.Clipboard.cut.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Clipboard.cut, text="Delete the selected text, but copy it to the clipboard before it gets deleted")
+
+        self.RibbonToolbar.edittab.TextSelect = self.RibbonToolbar.edittab.create_h_group("Text and Pen select")
+
+        self.RibbonToolbar.edittab.TextSelect.SelectAll = self.RibbonToolbar.edittab.TextSelect.create_toolbar_item(os.path.join(self.assetPath, "SelectAll.png"), text="Select")
+        self.RibbonToolbar.edittab.TextSelect.SelectAll["command"] = self.select_all
+        self.RibbonToolbar.edittab.TextSelect.SelectAll = tooltip.CreateToolTip(self.RibbonToolbar.edittab.TextSelect.SelectAll, text="Select all text")
+
+        self.RibbonToolbar.edittab.TextSelect.delete = self.RibbonToolbar.edittab.TextSelect.create_toolbar_item(os.path.join(self.assetPath, "Delete.png"), text="Delete")
+        self.RibbonToolbar.edittab.TextSelect.delete["command"] = self.delete
+        self.RibbonToolbar.edittab.TextSelect.delete = tooltip.CreateToolTip(self.RibbonToolbar.edittab.TextSelect.delete, text="Delete selected text")
+
+        self.RibbonToolbar.edittab.TextSelect.UndoRedo = self.RibbonToolbar.edittab.TextSelect.create_v_group([(os.path.join(self.assetPath, "undo.png"), 'Undo'), (os.path.join(self.assetPath, "redo.png"), 'Redo')])
+        self.RibbonToolbar.edittab.TextSelect.UndoRedo[0]["command"] = self.undo
+        self.RibbonToolbar.edittab.TextSelect.UndoRedo[0].tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.TextSelect.UndoRedo[0], text="Undo text")
+        self.RibbonToolbar.edittab.TextSelect.UndoRedo[1]["command"] = self.redo
+        self.RibbonToolbar.edittab.TextSelect.UndoRedo[1].tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.TextSelect.UndoRedo[1], text="Redo text")
+
         
         self.filetypes = (("Normal text file", "*.txt"), ("all files", "*.*"))
         self.init_dir = os.path.join(os.path.expanduser('~'), 'Desktop')
@@ -223,17 +324,24 @@ class Editor:
         editmenu.add_command(label="Delete", command=self.delete)
         editmenu.add_command(label="Select All", command=self.select_all)
         editmenu.add_separator()
-        editmenu.add_command(label="Show Toolbar", command=self.toolbar_pack)
+        editmenu.add_command(label="Show Toolbar", command=self.RibbonToolbar_pack)
         
         # Create Format Menu, with a check button for word wrap.
         formatmenu = tk.Menu(menubar, tearoff=0)
         self.word_wrap = tk.BooleanVar()
         formatmenu.add_checkbutton(label="Word Wrap", onvalue=True, offvalue=False, variable=self.word_wrap, command=self.wrap)
+
+        # Create help menu
+        helpmenu = tk.Menu(menubar, tearoff=0)
+        helpmenu.add_command(label="Show Repository", command=lambda: webbrowser.open(self.srcurl, new=2))
+        helpmenu.add_command(label="About", command=self.showAboutDialog)
+        helpmenu.add_command(label="License", command=self.showLicense)
         
         # Attach to Menu Bar
         menubar.add_cascade(label="File", menu=filemenu)
         menubar.add_cascade(label="Edit", menu=editmenu)
         menubar.add_cascade(label="Format", menu=formatmenu)
+        menubar.add_cascade(label="Help", menu=helpmenu)
         self.master.config(menu=menubar)
         
         # Create right-click menu.
@@ -387,7 +495,7 @@ class Editor:
                 return True
             except Exception as e:
                 self.UpdateStatusFile("Failed to open from local filesystem")
-                messagebox.showerror("File open error", str(e))
+                tkmb.showerror("File open error", str(e))
                 return False
         else:
             self.UpdateStatusFile("Cancled to open file from local filesystem")
@@ -508,7 +616,16 @@ class Editor:
         self.tabs[ curr_tab ].textbox.see(tk.INSERT)
 
     def undo(self):
-        self.tabs[ self.get_tab() ].textbox.edit_undo()
+        try:
+            self.tabs[ self.get_tab() ].textbox.edit_undo()
+        except tk.TclError:
+            tkmb.showerror("Undo Error", "There is nothing to undo!")
+
+    def redo(self):
+        try:
+            self.tabs[ self.get_tab() ].textbox.edit_redo()
+        except tk.TclError:
+            tkmb.showerror("Redo Error", "There is nothing to redo!")
 
     def right_click(self, event):
         self.right_click_menu.post(event.x_root, event.y_root)
@@ -517,7 +634,7 @@ class Editor:
         self.tab_right_click_menu.post(event.x_root, event.y_root)
     
     def right_click_toolbar(self, event):
-        self.toolbar_right_click_menu.post(event.x_root, event.y_root)
+        self.RibbonToolbar_right_click_menu.post(event.x_root, event.y_root)
         
     def close_tab(self, event=None):
         # Close the current tab if close is selected from file menu, or keyboard shortcut.
@@ -533,22 +650,31 @@ class Editor:
 
         # Prompt to save changes before closing tab
         if self.save_changes():
-            self.nb.forget( selected_tab )
-            self.tabs.pop( selected_tab )
+            try:
+                self.nb.forget( selected_tab )
+                self.tabs.pop( selected_tab )
+            except KeyError:
+                pass
 
         # Exit if last tab is closed
         if self.nb.index("end") == 0:
             self.master.destroy()
         
-    def exit(self):        
+    def exit(self):
+        status = None
+
+        try:
+            status = self.save_changes()
+        except KeyError:
+            status = True
         # Check if any changes have been made.
-        if self.save_changes():
+        if status:
             self.master.destroy()
         else:
             return
 
     def webrequest(self):
-        file_dir = simpledialog.askstring(title="Raw url location", prompt="Where do you want to fecth the raw data?:")
+        file_dir = tksd.askstring(title="Raw url location", prompt="Where do you want to fecth the raw data?:")
         if not file_dir:
             self.UpdateStatusFile("Cancled to download file from web")
             return
@@ -575,11 +701,11 @@ class Editor:
             self.UpdateStatusFile("File downloaded from web sucessfully")
         except Exception as e:
             self.UpdateStatusFile("File failed to download from web")
-            messagebox.showerror("Webrequest error", str(e))
+            tkmb.showerror("Webrequest error", str(e))
             return
 
     def LessView(self):
-        file_dir = (tkinter.filedialog.askopenfilename(initialdir=self.init_dir, title="Select file", filetypes=self.filetypes))
+        file_dir = (tkfd.askopenfilename(initialdir=self.init_dir, title="Select file", filetypes=self.filetypes))
         
         # If directory is not the empty string, try to open the file. 
         if file_dir:
@@ -592,18 +718,18 @@ class Editor:
                 less.resizable(False, False)
                 less.mainloop()
             # except Exception as e:
-            #     messagebox.showerror("Less Viewing error", str(e))
+            #     tkmb.showerror("Less Viewing error", str(e))
             #     pass
 
-    def toolbar_pack(self):
+    def RibbonToolbar_pack(self):
         try:
-            self.toolbar.pack(fill=tk.X, side=tk.TOP)
+            self.RibbonToolbar.pack(fill=tk.X, side=tk.TOP)
         except:
             pass
 
-    def toolbar_unpack(self):
+    def RibbonToolbar_unpack(self):
         try:
-            self.toolbar.pack_forget()
+            self.RibbonToolbar.pack_forget()
         except:
             pass
 
@@ -615,7 +741,7 @@ class Editor:
         # Check if any changes have been made, returns False if user chooses to cancel rather than select to save or not.
         if md5(self.tabs[ curr_tab ].textbox.get(1.0, 'end').encode('utf-8')).digest() != self.tabs[ curr_tab ].status.digest():
             # If changes were made since last save, ask if user wants to save.
-            m = messagebox.askyesnocancel('Editor', 'Do you want to save changes to ' + ('Untitled' if not file_dir else file_dir) + '?' )
+            m = tkmb.askyesnocancel('Editor', 'Do you want to save changes to ' + ('Untitled' if not file_dir else file_dir) + '?' )
             
             # If None, cancel.
             if m is None:
@@ -648,9 +774,35 @@ class Editor:
             except tk.TclError:
                 return
 
+    # About dialog with Pmw
+    def showAboutDialog(self):
+        Pmw.aboutversion('1.0')
+        Pmw.aboutcopyright('Copyright MXPSQL 2021\nAll rights reserved')
+        Pmw.aboutcontact("Visit " + str(self.srcurl) + " for more info")
 
-# open tkinterdnd.tk
+        about = Pmw.AboutDialog(self.master, applicationname = "TkEdit")
+        about.withdraw()
+        about.show()
+
+    # Show license
+    def showLicense(self):
+        text = ""
+
+        try:
+            f = open("LICENSE", "r")
+            text = f.read()
+            f.close()
+        except FileNotFoundError:
+            text = "LICENSE does not exist!"
+        
+        less = LessViewer(self.master, text, self.font)
+        less.mainloop()
+
+
+# open tkinterdnd.tk and initialize it for Pmw
 win = tkdnd.TkinterDnD.Tk()
+# win = tk.Tk()
+Pmw.initialise(win)
 # add dnd to window
 win.drop_target_register(tkdnd.DND_FILES)
 # make argument parser
@@ -667,14 +819,17 @@ win.asset = "asset"
 win.helv36 = tkf.Font(family="Microsoft Sans Serif",size=8)
 win.assetPath = os.path.join(os.getcwd(), win.asset)
 win.title("TkEdit")
+win.srcurl = "https://github.com/MXP2095onetechguy/TkEdit"
+win.wtkstyle = wtk.Style()
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
 # print(win.args)
 # make editor
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None)
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, wtkstyle=win.wtkstyle)
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
 # mainloop
 win.mainloop()
 # Exit
 sys.exit(0)
+
 

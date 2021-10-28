@@ -1,0 +1,26 @@
+import tkinter as tk
+import witkets as wtk
+root = tk.Tk()
+ribbon = wtk.Ribbon(root)
+tab1 = ribbon.add_tab('Main')
+group1 = tab1.create_h_group("Document")
+btn_new = group1.create_toolbar_item('asset/new.png', 'New')
+btn_open = group1.create_toolbar_item('asset/open.png', 'Open')
+btn_save = group1.create_toolbar_item('asset/save.png', 'Save')
+group2, btn = tab1.create_h_group("Edit", corner=True)
+btn_cut = group2.create_toolbar_item('asset/cut.png', 'Cut')
+btn_copy = group2.create_toolbar_item('asset/copy.png', 'Copy')
+btn_paste = group2.create_toolbar_item('asset/paste.png', 'Paste')
+btn_new['command'] = lambda: print('Hello, world!')
+vgroup1 = group2.create_v_group([
+    ('asset/undo.png', 'Undo'),
+    ('asset/redo.png', 'Redo')
+])
+tab2 = ribbon.add_tab('Insert')
+tab2.create_toolbar_item('asset/WebRq.png', 'Run')
+tab2.create_separator()
+ribbon.pack(fill='x')
+style = wtk.Style()
+wtk.Style.set_default_fonts()
+style.apply_default()
+root.mainloop()
