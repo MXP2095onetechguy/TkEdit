@@ -852,6 +852,8 @@ win.title("TkEdit")
 win.srcurl = "https://github.com/MXP2095onetechguy/TkEdit"
 win.wtkstyle = wtk.Style()
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
+# witkets style configuration
+win.wtkstyle.theme_use("clam")
 # hide window
 win.withdraw()
 # print(win.args)
