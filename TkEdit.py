@@ -146,9 +146,30 @@ class Document:
 
     def Mk5(self):
         self.status = md5(self.textbox.get(1.0, 'end').encode('utf-8'))
+
+class LineNumbers(tk.Text):
+    def __init__(self, master, text_widget, **kwargs):
+        super().__init__(master, **kwargs)
+
+        self.text_widget = text_widget
+        self.text_widget.bind('<KeyPress>', self.on_key_press)
+
+        self.insert(1.0, '1')
+        self.configure(state='disabled')
+
+    def on_key_press(self, event=None):
+        final_index = str(self.text_widget.index(tk.END))
+        num_of_lines = final_index.split('.')[0]
+        line_numbers_string = "\n".join(str(no + 1) for no in range(int(num_of_lines)))
+        width = len(str(num_of_lines))
+
+        self.configure(state='normal', width=width)
+        self.delete(1.0, tk.END)
+        self.insert(1.0, line_numbers_string)
+        self.configure(state='disabled')
         
 class Editor:
-    def __init__(self, master, assetDir, font, firstfile, srcurl, wtkstyle, **kwargs):
+    def __init__(self, master, assetDir, font, firstfile, srcurl, wtkstyle, argparsev, ods, **kwargs):
         self.master = master
         # print(firstfile)
 
@@ -295,7 +316,13 @@ class Editor:
         # self.RibbonToolbar.edittab.Clipboard.cut["command"] = self.cut
         # self.RibbonToolbar.edittab.Clipboard.cut.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Clipboard.cut, text="Delete the selected text, but copy it to the clipboard before it gets deleted")
 
-        self.RibbonToolbar.edittab.TextSelect = self.RibbonToolbar.edittab.create_h_group("Text and Pen select")
+        self.RibbonToolbar.edittab.TextSelect = None
+
+        self.RibbonToolbar.edittab.TextSelect, self.RibbonToolbar.edittab.TextSelect.btn = self.RibbonToolbar.edittab.create_h_group("Text and Pen select", corner=True)
+
+        # print(self.RibbonToolbar.edittab.TextSelect.btn)
+
+        # self.RibbonToolbar.edittab.TextSelect.btn["command"] = lambda: self.new_file
 
         self.RibbonToolbar.edittab.TextSelect.SelectAll = self.RibbonToolbar.edittab.TextSelect.create_toolbar_item(os.path.join(self.assetPath, "SelectAll.png"), text="Select")
         self.RibbonToolbar.edittab.TextSelect.SelectAll["command"] = self.select_all
@@ -462,6 +489,8 @@ class Editor:
         # Create Text Editor Box
         textbox = tk.Text(frame, relief='sunken', borderwidth=0, wrap='none', font=self.font)
         textbox.config(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, undo=True, autoseparators=True)
+        # textbox.ln = LineNumbers(frame, textbox, width=1)
+        # textbox.ln.pack(side='left', fill='y')
 
         # Keyboard / Click Bindings
         textbox.bind('<Control-s>', self.save_file)
@@ -492,9 +521,11 @@ class Editor:
         
         return textbox
 
-    def UpdateStatusMouse(self, mousepos, document):
+    def UpdateStatusMouse(self, mousepos, document, event=None):
         # print(mousepos)
         self.statusbar.fmfm.fm1.label["text"] = 'Line/Row: ' + mousepos.split('.')[0] + '. Charater/Column: ' + mousepos.split('.')[1] + ". Document " + str(document.file_name) + "."
+        if event:
+            event()
 
     def UpdateStatusFile(self, status):
         self.statusbar.fmfm.fm2.label["text"] = "File status: " + status
@@ -843,8 +874,9 @@ Pmw.initialise(win)
 win.drop_target_register(tkdnd.DND_FILES)
 # make argument parser
 win.argparse = argparse.ArgumentParser()
-win.argparse.add_argument('-f', '--file', action='store', help="File input", dest="file", type=str, default="", metavar="\"File here\"")
-win.argparse.add_argument('dfile', action='store', help="File input for drag and drop", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
+win.argparse.add_argument('-f', '--file', action='store', help="File input from command line with arguments", dest="file", type=str, default="", metavar="\"File here\"")
+win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font, comming soon!', dest="ods", default=False)
+win.argparse.add_argument('dfile', action='store', help="File input for drag and drop, can be used also from the command line", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
 # parse args
 win.argv = sys.argv
 sys.argv.pop(0)
@@ -864,7 +896,7 @@ win.wtkstyle.theme_use("clam")
 win.withdraw()
 # print(win.args)
 # make editor
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, wtkstyle=win.wtkstyle)
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, wtkstyle=win.wtkstyle, argparsev=win.args, ods=win.args.ods)
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
 # show window
