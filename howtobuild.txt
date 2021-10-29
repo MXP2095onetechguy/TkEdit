@@ -1,3 +1,12 @@
+Prequisites:
 Install the modules listed on requirements.txt with pip
+
+How to make icons:
 Run the mkico script
+
+How to build an executable or an installer or whatever:
 Then run the setup.py
+
+
+How to clear:
+rune clearbuild.py
