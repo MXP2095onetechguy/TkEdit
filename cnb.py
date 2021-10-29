@@ -12,6 +12,9 @@ class CustomNotebook(ttk.Notebook):
 
     def __init__(self, master, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
+
+        self.__inititialized = False
+
         if not self.__initialized:
             self.__initialize_custom_style()
             self.__inititialized = True

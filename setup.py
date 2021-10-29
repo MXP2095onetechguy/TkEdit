@@ -14,7 +14,7 @@ include = ["atexit"]
 
 exclude = []
 
-pkgmodule = ["PIL", "requests"]
+pkgmodule = ["PIL", "requests", "Pmw", "tkinterdnd2", "witkets"]
 
 options = {"build_exe": {"includes":include, "packages": pkgmodule, 'include_files':includefile, 'excludes': exclude}}
 

@@ -88,7 +88,6 @@ import Pmw
 import webbrowser
 import witkets as wtk
 import cnb
-import time
 
 class LessViewer(tk.Toplevel):
     def __init__(self, parent, text, font, **kwargs):
@@ -106,6 +105,10 @@ class LessViewer(tk.Toplevel):
 
         self.exit = tk.Button(self.fm, text="Exit", command=self.destroy)
         self.exit.pack()
+
+class Bunch():
+    def __init__(self, *args, **kwargs):
+        pass
 
 class GoodBookForThisPurpose(cnb.BetterCustomNotebook):
     def __init__(self, oncloseall, master, enbSelf, *args, **kwargs):
@@ -365,9 +368,12 @@ class Editor:
 
         # Create help menu
         helpmenu = tk.Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="Show Repository", command=lambda: webbrowser.open(self.srcurl, new=2))
         helpmenu.add_command(label="About", command=self.showAboutDialog)
         helpmenu.add_command(label="License", command=self.showLicense)
+        helpmenu.add_separator()
+        helpmenu.add_command(label="Show documentation", command=lambda: tkmb.showinfo("Documentation", "Look at the tkedit.py of the repository and study the code"))
+        helpmenu.add_separator()
+        helpmenu.add_command(label="Show Repository", command=lambda: webbrowser.open(self.srcurl, new=2))
         
         # Attach to Menu Bar
         menubar.add_cascade(label="File", menu=filemenu)
@@ -829,7 +835,7 @@ class Editor:
         less.mainloop()
 
 
-# open tkinterdnd.tk and initialize it for Pmw
+# open tkdnd.TkinterDnD.Tk and initialize it for Pmw
 win = tkdnd.TkinterDnD.Tk()
 # win = tk.Tk()
 Pmw.initialise(win)
@@ -863,7 +869,7 @@ win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.fi
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
 # show window
 win.deiconify()
-# mainloop
+# mainloop tk
 win.mainloop()
 # Exit
 sys.exit(0)
