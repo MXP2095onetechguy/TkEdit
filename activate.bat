@@ -1,4 +1,3 @@
-rem activation wrapper
+cd Env
 cd Scripts
 activate.bat
-cd ..

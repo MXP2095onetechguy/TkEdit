@@ -1,5 +1,9 @@
 Env setup:
+Go to the env
+Configure the dir.txt in the scripts directory
+Configure the pyenv.cfg
 Activate the venv
+
 Go to the src directory
 
 Install modules:

@@ -1,5 +1,4 @@
 #!/bin/false
-# activation wrapper
+cd Env
 cd Scripts
 source activate
-cd ..

@@ -8,9 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set /p VENV_DIR=<dir.txt
-
-set VIRTUAL_ENV=%VENV_DIR%
+set /p VIRTUAL_ENV=<dir.txt
 
 if not defined PROMPT set PROMPT=$P$G
 
@@ -18,7 +16,7 @@ if defined _OLD_VIRTUAL_PROMPT set PROMPT=%_OLD_VIRTUAL_PROMPT%
 if defined _OLD_VIRTUAL_PYTHONHOME set PYTHONHOME=%_OLD_VIRTUAL_PYTHONHOME%
 
 set _OLD_VIRTUAL_PROMPT=%PROMPT%
-set PROMPT=(tkedit) %PROMPT%
+set PROMPT=(Env) %PROMPT%
 
 if defined PYTHONHOME set _OLD_VIRTUAL_PYTHONHOME=%PYTHONHOME%
 set PYTHONHOME=
