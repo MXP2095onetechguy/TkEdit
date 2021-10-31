@@ -10,4 +10,4 @@ Tri licensed
 
 Refer to howtobuild.txt for building an executable
 
-Pipreqs is used to generate requirments.txt
+Pipreqs formerly is used to generate requirments.txt, being that this is a venv, I use pip freeze

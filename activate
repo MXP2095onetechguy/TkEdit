@@ -1,0 +1,5 @@
+#!/bin/false
+# activation wrapper
+cd Scripts
+source activate
+cd ..

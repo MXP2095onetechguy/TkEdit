@@ -1,8 +1,17 @@
 # Very scary .gitignore
 
+# inside venv
+Src/__pycache__/
+Src/build/
+Src/dist/
+
+# non inside venv
 __pycache__/
 build/
 dist/
+Lib/
+Libs/
+Include/
 
 # ionide
 .fake

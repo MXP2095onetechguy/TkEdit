@@ -169,11 +169,14 @@ class LineNumbers(tk.Text):
         self.configure(state='disabled')
         
 class Editor:
-    def __init__(self, master, assetDir, font, firstfile, srcurl, wtkstyle, argparsev, ods, **kwargs):
+    def __init__(self, master, assetDir, font, ods36, firstfile, srcurl, wtkstyle, argparsev, ods, **kwargs):
         self.master = master
         # print(firstfile)
 
         self.font = font
+        self.odsfont = ods36
+
+        self.ods = ods
 
         self.wtkstyle = wtkstyle
         wtk.Style.set_default_fonts()
@@ -487,7 +490,13 @@ class Editor:
         yscrollbar.pack(side='right', fill='y')
 
         # Create Text Editor Box
-        textbox = tk.Text(frame, relief='sunken', borderwidth=0, wrap='none', font=self.font)
+        thisfont = None
+        if self.ods:
+            thisfont = self.odsfont
+        else:
+            thisfont=self.font
+
+        textbox = tk.Text(frame, relief='sunken', borderwidth=0, wrap='none', font=thisfont)
         textbox.config(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, undo=True, autoseparators=True)
         # textbox.ln = LineNumbers(frame, textbox, width=1)
         # textbox.ln.pack(side='left', fill='y')
@@ -870,40 +879,70 @@ class Editor:
 win = tkdnd.TkinterDnD.Tk()
 # win = tk.Tk()
 Pmw.initialise(win)
+
 # add dnd to window
 win.drop_target_register(tkdnd.DND_FILES)
+
 # make argument parser
 win.argparse = argparse.ArgumentParser()
 win.argparse.add_argument('-f', '--file', action='store', help="File input from command line with arguments", dest="file", type=str, default="", metavar="\"File here\"")
-win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font, comming soon!', dest="ods", default=False)
+win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font', dest="ods", default=False)
+win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts', dest="mono", default=False)
 win.argparse.add_argument('dfile', action='store', help="File input for drag and drop, can be used also from the command line", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
+
 # parse args
 win.argv = sys.argv
 sys.argv.pop(0)
 win.args, win.unknownargs = win.argparse.parse_known_args(sys.argv)
 sys.argv = win.argv
+
 # configuration
+# assets folder name
 win.asset = "asset"
-win.helv36 = tkf.Font(family="Microsoft Sans Serif",size=8)
+
+# fonts
+win.helv36 = None
+win.ods36 = None
+
+if win.args.mono:
+    win.helv36 = tkf.Font(family="Microsoft Sans Serif Mono",size=8)
+    win.ods36 = tkf.Font(family="OpenDyslexic Mono",size=8)
+else:
+    win.helv36 = tkf.Font(family="Microsoft Sans Serif",size=8)
+    win.ods36 = tkf.Font(family="OpenDyslexic",size=8)
+
+# make assets directory
 win.assetPath = os.path.join(os.getcwd(), win.asset)
+
+# window title set
 win.title("TkEdit")
+
+# source location
 win.srcurl = "https://github.com/MXP2095onetechguy/TkEdit"
+
+# witkets style
 win.wtkstyle = wtk.Style()
+
+# window icon set
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
+
 # witkets style configuration
 win.wtkstyle.theme_use("clam")
 # hide window
 win.withdraw()
 # print(win.args)
 # make editor
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, wtkstyle=win.wtkstyle, argparsev=win.args, ods=win.args.ods)
+
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, wtkstyle=win.wtkstyle, argparsev=win.args, ods=win.args.ods)
+
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
+
 # show window
 win.deiconify()
+
 # mainloop tk
 win.mainloop()
+
 # Exit
 sys.exit(0)
-
-
