@@ -68,6 +68,9 @@
 #
 # One last request for you and users of TkEdit:
 # Please don't sue or bring me to the court to steal this from me.
+#
+# I am going MIT mode, but you can use others.
+#
 
 import tkinter as tk
 from tkinter import ttk
@@ -88,6 +91,56 @@ import Pmw
 import webbrowser
 import witkets as wtk
 import cnb
+from ttkwidgets import AutoHideScrollbar
+
+class CustomText(tk.Text):
+    def __init__(self, *args, **kwargs):
+        tk.Text.__init__(self, *args, **kwargs)
+
+        # create a proxy for the underlying widget
+        self._orig = self._w + "_orig"
+        self.tk.call("rename", self._w, self._orig)
+        self.tk.createcommand(self._w, self._proxy)
+
+    def _proxy(self, *args):
+        # let the actual widget perform the requested action
+        cmd = (self._orig,) + args
+        result = self.tk.call(cmd)
+
+        # generate an event if something was added or deleted,
+        # or the cursor position changed
+        if (args[0] in ("insert", "replace", "delete") or 
+            args[0:3] == ("mark", "set", "insert") or
+            args[0:2] == ("xview", "moveto") or
+            args[0:2] == ("xview", "scroll") or
+            args[0:2] == ("yview", "moveto") or
+            args[0:2] == ("yview", "scroll")
+        ):
+            self.event_generate("<<Change>>", when="tail")
+
+        # return what the actual widget returned
+        return result  
+
+class TextLineNumbers(tk.Canvas):
+    def __init__(self, *args, **kwargs):
+        tk.Canvas.__init__(self, *args, **kwargs)
+        self.textwidget = None
+
+    def attach(self, text_widget):
+        self.textwidget = text_widget
+        
+    def redraw(self, *args):
+        '''redraw line numbers'''
+        self.delete("all")
+
+        i = self.textwidget.index("@0,0")
+        while True :
+            dline= self.textwidget.dlineinfo(i)
+            if dline is None: break
+            y = dline[1]
+            linenum = str(i).split(".")[0]
+            self.create_text(2,y,anchor="nw", text=linenum)
+            i = self.textwidget.index("%s+1line" % i)
 
 class LessViewer(tk.Toplevel):
     def __init__(self, parent, text, font, **kwargs):
@@ -448,10 +501,6 @@ class Editor:
 
         self.statusbar.fmfm.fm2.label = tk.Label(self.statusbar.fmfm.fm2, text="A")
         self.statusbar.fmfm.fm2.label.pack(side=tk.LEFT, expand=1)
-
-        self.statusbar.scrollbar = tk.Scrollbar(self.statusbar, orient=tk.HORIZONTAL)
-        # self.statusbar.scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
-        # self.statusbar.scrollbar["command"] = self.statusbar.fmfm.xview
         self.statusbar.pack(fill=tk.X, side=tk.BOTTOM)
 
         # Create Initial Tab
@@ -481,12 +530,19 @@ class Editor:
         # self.nb.dnd_bind('<<Drop>>', lambda e: print(e))
 
     def create_text_widget(self, frame, document):
+        def docUpdate(self, document, text):
+            self.UpdateStatusMouse(text.index('current'), document)
+            text.ln.redraw()
+        
+        def docRedraw(self, text):
+            text.ln.redraw()
+        
         # Horizontal Scroll Bar 
         xscrollbar = tk.Scrollbar(frame, orient='horizontal')
         xscrollbar.pack(side='bottom', fill='x')
         
         # Vertical Scroll Bar
-        yscrollbar = tk.Scrollbar(frame)
+        yscrollbar = AutoHideScrollbar(frame)
         yscrollbar.pack(side='right', fill='y')
 
         # Create Text Editor Box
@@ -496,10 +552,13 @@ class Editor:
         else:
             thisfont=self.font
 
-        textbox = tk.Text(frame, relief='sunken', borderwidth=0, wrap='none', font=thisfont)
+        textbox = CustomText(frame, relief='sunken', borderwidth=0, wrap='none', font=thisfont)
         textbox.config(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, undo=True, autoseparators=True)
-        # textbox.ln = LineNumbers(frame, textbox, width=1)
-        # textbox.ln.pack(side='left', fill='y')
+        textbox.ln = TextLineNumbers(frame)
+        textbox.ln.pack(side=tk.LEFT,fill=tk.Y)
+        textbox.ln.config(width=50)
+        textbox.ln.attach(textbox)
+        textbox.ln.pack(side='left', fill='y')
 
         # Keyboard / Click Bindings
         textbox.bind('<Control-s>', self.save_file)
@@ -508,8 +567,9 @@ class Editor:
         textbox.bind('<Control-a>', self.select_all)
         textbox.bind('<Control-w>', self.close_tab)
         textbox.bind('<Button-3>', self.right_click)
-        textbox.bind('<KeyRelease>', lambda e: self.UpdateStatusMouse(textbox.index('current'), document))
-        textbox.bind('<KeyPress>', lambda e: self.UpdateStatusMouse(textbox.index('current'), document))
+        textbox.bind('<KeyRelease>', lambda e: docUpdate(self, document, textbox))
+        textbox.bind('<KeyPress>', lambda e: docUpdate(self, document, textbox))
+        textbox.bind("<<Change>>", lambda e: docUpdate(self, document, textbox))
 
         # drag and drop bind
         # textbox.drop_target_register(tkdnd.DND_FILES)
@@ -519,7 +579,7 @@ class Editor:
 
 
         # Pack the textbox
-        textbox.pack(fill='both', expand=True)   
+        textbox.pack(fill='both', expand=True, side=tk.RIGHT)   
 
         # say the new status
         # self.UpdateStatusFile("New file buffer generated")     
@@ -923,17 +983,20 @@ win.srcurl = "https://github.com/MXP2095onetechguy/TkEdit"
 # witkets style
 win.wtkstyle = wtk.Style()
 
+# witkets style config
+win.wtkstyle.theme_use('clam')
+
 # window icon set
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
 
-# witkets style configuration
-win.wtkstyle.theme_use("clam")
 # hide window
 win.withdraw()
 # print(win.args)
 # make editor
 
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, wtkstyle=win.wtkstyle, argparsev=win.args, ods=win.args.ods)
+_default_root = win
+
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, argparsev=win.args, ods=win.args.ods, wtkstyle=win.wtkstyle)
 
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))

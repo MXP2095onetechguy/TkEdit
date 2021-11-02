@@ -1,0 +1,1 @@
+The place where I git clone other projects for this one, follow and accept the licenses mentioned on the git repository. This is not guranteed to be used, so don't ramble at me telling that I did not follow the license, just the place where I clone it.

@@ -1,1 +1,1 @@
-..\extra\runsh.bat mkreqs.sh
+..\Scripts\runsh.bat mkreqs.sh
