@@ -538,7 +538,7 @@ class Editor:
             text.ln.redraw()
         
         # Horizontal Scroll Bar 
-        xscrollbar = tk.Scrollbar(frame, orient='horizontal')
+        xscrollbar = ttk.Scrollbar(frame, orient='horizontal')
         xscrollbar.pack(side='bottom', fill='x')
         
         # Vertical Scroll Bar
