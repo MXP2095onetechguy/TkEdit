@@ -74,6 +74,7 @@
 
 import tkinter as tk
 from tkinter import ttk
+import _tkinter as _tk
 import tkinter.filedialog as tkfd
 from tkinter import messagebox as tkmb
 from tkinter import simpledialog as tksd
@@ -92,6 +93,7 @@ import webbrowser
 import witkets as wtk
 import cnb
 from ttkwidgets import AutoHideScrollbar
+import tksvg
 
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
@@ -222,7 +224,7 @@ class LineNumbers(tk.Text):
         self.configure(state='disabled')
         
 class Editor:
-    def __init__(self, master, assetDir, font, ods36, firstfile, srcurl, wtkstyle, argparsev, ods, **kwargs):
+    def __init__(self, master, assetDir, font, ods36, firstfile, srcurl, wtkstyle, argparsev, ods, ttkstyle, **kwargs):
         self.master = master
         # print(firstfile)
 
@@ -756,11 +758,15 @@ class Editor:
             self.tabs[ self.get_tab() ].textbox.edit_undo()
         except tk.TclError:
             tkmb.showerror("Undo Error", "There is nothing to undo!")
+        except _tk.TclError:
+            tkmb.showerror("Undo Error", "There is nothing to undo!")
 
     def redo(self):
         try:
             self.tabs[ self.get_tab() ].textbox.edit_redo()
         except tk.TclError:
+            tkmb.showerror("Redo Error", "There is nothing to redo!")
+        except _tk.TclError:
             tkmb.showerror("Redo Error", "There is nothing to redo!")
 
     def right_click(self, event):
@@ -960,6 +966,29 @@ sys.argv = win.argv
 # assets folder name
 win.asset = "asset"
 
+# win get themes and require themes
+try:
+    win.tk.call('lappend', 'auto_path', os.path.join(os.getcwd(), "clearlooks"))
+    win.tk.call('package', 'require', 'clearlooks')
+except _tk.TclError:
+    win.tk.call("source", os.path.join(os.getcwd(), os.path.join("clearlooks", "clearlooks.tcl") ))
+
+try:
+    win.tk.call("lappend", "auto_path", os.path.join(os.getcwd(), "awthemes"))
+    win.tk.call("package", "require", "awthemes")
+except _tk.TclError:
+    win.tk.call("source", os.path.join(os.getcwd(), os.path.join( "awthemes", "awthemes.tcl" )))
+
+try:
+    win.tk.call("lappend", "auto_path", os.path.join(os.getcwd(), "ttkthemes"))
+    win.tk.call("package", "require", "ttkthemes")
+except _tk.TclError:
+    # win.tk.call("source", os.path.join(os.getcwd(), os.path.join( "ttkthemes" , os.path.join( "winxpblue", "winxpblue.tcl" ) ) ) )
+    win.tk.call("source", os.path.join(os.getcwd(), os.path.join( "ttkthemes" , "pkgIndex.tcl") ) )
+
+
+# print(ttk.Style().theme_names())
+
 # fonts
 win.helv36 = None
 win.ods36 = None
@@ -986,6 +1015,23 @@ win.wtkstyle = wtk.Style()
 # witkets style config
 win.wtkstyle.theme_use('clam')
 
+# ttk style
+win.ttkstyle = ttk.Style()
+
+# ttk style config
+
+try:
+    win.ttkstyle.theme_use("winxpblue")
+except _tk.TclError:
+    try:
+        win.ttkstyle.theme_use("awclearlooks")
+    except _tk.TclError:
+        try:
+            win.ttkstyle.theme_use("awlight")
+        except _tk.TclError:
+            pass
+    
+
 # window icon set
 win.iconphoto(True,tk.PhotoImage(file=os.path.join(win.assetPath, "TkEdit.png")))
 
@@ -996,7 +1042,7 @@ win.withdraw()
 
 _default_root = win
 
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, argparsev=win.args, ods=win.args.ods, wtkstyle=win.wtkstyle)
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, argparsev=win.args, ods=win.args.ods, wtkstyle=win.wtkstyle, ttkstyle=win.ttkstyle)
 
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))

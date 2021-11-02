@@ -8,13 +8,13 @@ if sys.platform == "win32":
 
 executables = [cxF.Executable("TkEdit.py", base=base, target_name="TkEdit.exe", icon="asset/TkEditI.ico")]
 
-includefile = ["asset/", "LICENSE"]
+includefile = ["asset/", "LICENSE", "clearlooks/", "Pmw/", "list.txt", "awthemes/", "themes/"]
 
 include = ["atexit"]
 
 exclude = []
 
-pkgmodule = ["PIL", "requests", "Pmw", "tkinterdnd2", "witkets"]
+pkgmodule = ["PIL", "requests", "tkinterdnd2", "witkets", "ttkwidgets"]
 
 options = {"build_exe": {"includes":include, "packages": pkgmodule, 'include_files':includefile, 'excludes': exclude}}
 
