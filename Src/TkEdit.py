@@ -93,7 +93,9 @@ import webbrowser
 import witkets as wtk
 import cnb
 from ttkwidgets import AutoHideScrollbar
-import tksvg
+import BetterRibbon as btrb
+import datetime
+import txttools as txttl
 
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
@@ -224,7 +226,7 @@ class LineNumbers(tk.Text):
         self.configure(state='disabled')
         
 class Editor:
-    def __init__(self, master, assetDir, font, ods36, firstfile, srcurl, wtkstyle, argparsev, ods, ttkstyle, **kwargs):
+    def __init__(self, master, assetDir, font, ods36, customfont, firstfile, srcurl, wtkstyle, argparsev, ods, ttkstyle, **kwargs):
         self.master = master
         # print(firstfile)
 
@@ -232,6 +234,8 @@ class Editor:
         self.odsfont = ods36
 
         self.ods = ods
+
+        self.customfont = customfont
 
         self.wtkstyle = wtkstyle
         wtk.Style.set_default_fonts()
@@ -258,19 +262,24 @@ class Editor:
         self.RibbonToolbarfm = tk.Frame(self.fm)
         self.RibbonToolbarfm.pack(fill=tk.X, side=tk.TOP)
 
-        self.RibbonToolbar = wtk.Ribbon(self.RibbonToolbarfm)
-        self.RibbonToolbar_pack()
+        self.RibbonUI = btrb.BetterRibbon(self.RibbonToolbarfm)
+        self.RibbonUI.pack()
+
+        self.RibbonToolbar = self.RibbonUI.getRibbon()
+        self.RibbonUI_pack()
 
         self.RibbonToolbar.maintab = self.RibbonToolbar.add_tab('Main Document')
         self.RibbonToolbar.maintab.Editor = self.RibbonToolbar.maintab.create_h_group("Editor")
 
 
 
-        self.RibbonToolbar_right_click_menu = tk.Menu(self.master, tearoff=0)
-        self.RibbonToolbar_right_click_menu.add_command(label="Open from WebRequest", command=self.webrequest)
-        self.RibbonToolbar_right_click_menu.add_command(label="Quit", command=self.exit)
-        self.RibbonToolbar_right_click_menu.add_separator()
-        self.RibbonToolbar_right_click_menu.add_command(label="Hide Ribbon", command=self.RibbonToolbar_unpack)
+        self.RibbonUI_right_click_menu = tk.Menu(self.master, tearoff=0)
+        self.RibbonUI_right_click_menu.add_command(label="Open from WebRequest", command=self.webrequest)
+        self.RibbonUI_right_click_menu.add_command(label="Quit", command=self.exit)
+        self.RibbonUI_right_click_menu.add_separator()
+        self.RibbonUI_right_click_menu.add_command(label="Hide Ribbon", command=self.RibbonUI_unpack)
+
+        self.RibbonUI.bind('<Button-3>', self.right_click_toolbar)
         self.RibbonToolbar.bind('<Button-3>', self.right_click_toolbar)
 
         self.RibbonToolbar.maintab.Editor.exit = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Exit.png"), text="Exit")
@@ -396,6 +405,19 @@ class Editor:
         self.RibbonToolbar.edittab.TextSelect.UndoRedo[1]["command"] = self.redo
         self.RibbonToolbar.edittab.TextSelect.UndoRedo[1].tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.TextSelect.UndoRedo[1], text="Redo text")
 
+
+
+        self.RibbonToolbar.edittab.Insert = self.RibbonToolbar.edittab.create_h_group("Text insert")
+
+        self.RibbonToolbar.edittab.Insert.time = self.RibbonToolbar.edittab.Insert.create_toolbar_item(os.path.join(self.assetPath, "instime.png"), text="Insert Time")
+        self.RibbonToolbar.edittab.Insert.time["command"] = self.insertTime
+        self.RibbonToolbar.edittab.Insert.time.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Insert.time, text="Insert the Date and Time at the current cursor position")
+
+
+        self.RibbonToolbar.edittab.Insert.user = self.RibbonToolbar.edittab.Insert.create_toolbar_item(os.path.join(self.assetPath, "instuser.png"), text="Insert Username")
+        self.RibbonToolbar.edittab.Insert.user["command"] = self.insertUsername
+        self.RibbonToolbar.edittab.Insert.user.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Insert.user, text="Insert the current username at the current cursor position")
+
         
         self.filetypes = (("Normal text file", "*.txt"), ("all files", "*.*"))
         self.init_dir = os.path.join(os.path.expanduser('~'), 'Desktop')
@@ -444,12 +466,16 @@ class Editor:
         editmenu.add_command(label="Delete", command=self.delete)
         editmenu.add_command(label="Select All", command=self.select_all)
         editmenu.add_separator()
-        editmenu.add_command(label="Show Ribbon", command=self.RibbonToolbar_pack)
+        editmenu.add_command(label="Find", command=self.FindText)
+        editmenu.add_separator()
+        editmenu.add_command(label="Show Ribbon", command=self.RibbonUI_pack)
         
         # Create Format Menu, with a check button for word wrap.
         formatmenu = tk.Menu(menubar, tearoff=0)
         self.word_wrap = tk.BooleanVar()
         formatmenu.add_checkbutton(label="Word Wrap", onvalue=True, offvalue=False, variable=self.word_wrap, command=self.wrap)
+        self.block_cursor = tk.BooleanVar()
+        formatmenu.add_checkbutton(label="Block cursor", onvalue=True, offvalue=False, variable=self.block_cursor, command=self.blockCursorSet)
 
         # Create help menu
         helpmenu = tk.Menu(menubar, tearoff=0)
@@ -567,6 +593,7 @@ class Editor:
         textbox.bind('<Control-o>', self.open_file)
         textbox.bind('<Control-n>', self.new_file)
         textbox.bind('<Control-a>', self.select_all)
+        textbox.bind('<Control-f>', self.FindText)
         textbox.bind('<Control-w>', self.close_tab)
         textbox.bind('<Button-3>', self.right_click)
         textbox.bind('<KeyRelease>', lambda e: docUpdate(self, document, textbox))
@@ -736,6 +763,14 @@ class Editor:
         else:
             for index in self.tabs:
                 self.tabs[ index ].textbox.config(wrap="none")
+
+    def blockCursorSet(self):
+        if self.block_cursor.get() == True:
+            for index in self.tabs:
+                self.tabs[ index ].textbox.config(blockcursor=True)
+        else:
+            for index in self.tabs:
+                self.tabs[ index ].textbox.config(blockcursor=False)
             
     def paste(self):
         try: 
@@ -776,7 +811,7 @@ class Editor:
         self.tab_right_click_menu.post(event.x_root, event.y_root)
     
     def right_click_toolbar(self, event):
-        self.RibbonToolbar_right_click_menu.post(event.x_root, event.y_root)
+        self.RibbonUI_right_click_menu.post(event.x_root, event.y_root)
         
     def close_tab(self, event=None):
         # Close the current tab if close is selected from file menu, or keyboard shortcut.
@@ -814,6 +849,23 @@ class Editor:
             self.master.destroy()
         else:
             return
+
+    # insert time to cursor
+    def insertTime(self):
+        curr_tab = self.get_tab()
+        self.tabs[ curr_tab ].textbox.insert(tk.INSERT, datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S.%f"))
+
+    # insert username to cursor
+    def insertUsername(self):
+        curr_tab = self.get_tab()
+        self.tabs[ curr_tab ].textbox.insert(tk.INSERT, os.popen("whoami").read().strip())
+
+    # find text
+    def FindText(self, event=None):
+        curr_tab = self.get_tab()
+        txttl.Find(win, self.tabs[ curr_tab ].textbox)
+
+
 
     def webrequest(self):
         file_dir = tksd.askstring(title="Raw url location", prompt="Where do you want to fecth the raw data?:")
@@ -863,15 +915,15 @@ class Editor:
             #     tkmb.showerror("Less Viewing error", str(e))
             #     pass
 
-    def RibbonToolbar_pack(self):
+    def RibbonUI_pack(self):
         try:
-            self.RibbonToolbar.pack(fill=tk.X, side=tk.TOP)
+            self.RibbonUI.pack(fill=tk.X, side=tk.TOP)
         except:
             pass
 
-    def RibbonToolbar_unpack(self):
+    def RibbonUI_unpack(self):
         try:
-            self.RibbonToolbar.pack_forget()
+            self.RibbonUI.pack_forget()
         except:
             pass
 
@@ -935,7 +987,7 @@ class Editor:
             text = f.read()
             f.close()
         except FileNotFoundError:
-            text = "LICENSE does not exist!"
+            text = "LICENSE does not exist! Where is the copy of the license? This is not good. \nYou should know the license, it is GPL3, MIT and ZLib, you should search these license up in your search engine, don't use google you are feeding it's monopoly, use bing, gud for images."
         
         less = LessViewer(self.master, text, self.font)
         less.mainloop()
@@ -953,6 +1005,7 @@ win.drop_target_register(tkdnd.DND_FILES)
 win.argparse = argparse.ArgumentParser()
 win.argparse.add_argument('-f', '--file', action='store', help="File input from command line with arguments", dest="file", type=str, default="", metavar="\"File here\"")
 win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font', dest="ods", default=False)
+win.argparse.add_argument('-cfont', '--customfont', action='store_true', help='Use custom font, the default font is still helvetica or opendeslexic', dest="cfont", default=False)
 win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts', dest="mono", default=False)
 win.argparse.add_argument('dfile', action='store', help="File input for drag and drop, can be used also from the command line", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
 
@@ -1042,7 +1095,7 @@ win.withdraw()
 
 _default_root = win
 
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, argparsev=win.args, ods=win.args.ods, wtkstyle=win.wtkstyle, ttkstyle=win.ttkstyle)
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, customfont=win.args.cfont, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, argparsev=win.args, ods=win.args.ods, wtkstyle=win.wtkstyle, ttkstyle=win.ttkstyle)
 
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
