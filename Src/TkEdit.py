@@ -98,6 +98,16 @@ import BetterRibbon as btrb
 import datetime
 import txttools as txttl
 
+# TOML reset content
+TomlResetContent = {
+    "TkEdit": {
+        "exicon": False,
+        "ods": False,
+        "mono": False,
+        "cmdbg": False
+    }
+}
+
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
         tk.Text.__init__(self, *args, **kwargs)
@@ -227,7 +237,7 @@ class LineNumbers(tk.Text):
         self.configure(state='disabled')
         
 class Editor:
-    def __init__(self, master, assetDir, font, ods36, customfont, firstfile, srcurl, wtkstyle, argparsev, ods, ttkstyle, **kwargs):
+    def __init__(self, master, assetDir, font, ods36, firstfile, srcurl, wtkstyle, argparsev, ods, ttkstyle, tomlcfg, **kwargs):
         self.master = master
         # print(firstfile)
 
@@ -236,8 +246,6 @@ class Editor:
 
         self.ods = ods
 
-        self.customfont = customfont
-
         self.wtkstyle = wtkstyle
         wtk.Style.set_default_fonts()
         self.wtkstyle.apply_default()
@@ -245,6 +253,8 @@ class Editor:
         self.srcurl = srcurl
 
         self.assetPath = os.path.join(os.getcwd(), assetDir)
+
+        self.config = tomlcfg
 
         # create main frame
         self.fm = tk.Frame(self.master, **kwargs)
@@ -283,7 +293,65 @@ class Editor:
         self.RibbonUI.bind('<Button-3>', self.right_click_toolbar)
         self.RibbonToolbar.bind('<Button-3>', self.right_click_toolbar)
 
-        if argparsev.exico:
+        if argparsev.exico and not self.config["TkEdit"]["exicon"]:
+
+            self.RibbonToolbar.maintab.Editor = self.RibbonToolbar.maintab.create_h_group("Editor")
+
+            self.RibbonToolbar.maintab.Editor.exit = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Exit.png"), text="Exit")
+            self.RibbonToolbar.maintab.Editor.exit["command"] = self.exit
+            # self.RibbonToolbar.exit.pack(side=tk.LEFT, padx=2, pady=2)
+            self.RibbonToolbar.maintab.Editor.exit.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.exit, text="Exit the editor")
+
+            # self.ImageClose = Image.open(os.path.join(self.assetPath, "Close.png"))
+            # self.ImageTkClose = ImageTk.PhotoImage(self.ImageClose)
+
+            # self.RibbonToolbar.close = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.close_tab, image=self.ImageTkClose)
+            # self.RibbonToolbar.close.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.close, text="Close the open tab", waittime=250)
+            self.RibbonToolbar.maintab.Editor.close = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Close.png"), text="Close")
+            self.RibbonToolbar.maintab.Editor.close["command"] = self.close_tab
+            self.RibbonToolbar.maintab.Editor.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.close, text="Close the open tab", waittime=250)
+            
+
+            # self.RibbonToolbar.separator = tk.Label(self.RibbonToolbar, text="|")
+            # self.RibbonToolbar.separator.pack(side=tk.LEFT, padx=2, pady=2)
+
+            # self.ImageNew = Image.open(os.path.join(self.assetPath, "New.png"))
+            # self.ImageTkNew = ImageTk.PhotoImage(self.ImageNew)
+
+            self.RibbonToolbar.maintab.OpenNew = self.RibbonToolbar.maintab.create_h_group("Open and New")
+
+            # self.RibbonToolbar.new = tk.Button(self.RibbonToolbar, relief=tk.FLAT, image=self.ImageTkNew, command=self.new_file)
+            # self.RibbonToolbar.new.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.new, text="New tab for new file")
+
+            self.RibbonToolbar.maintab.OpenNew.new = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "New.png"), text="New")
+            self.RibbonToolbar.maintab.OpenNew.new["command"] = self.new_file
+            self.RibbonToolbar.maintab.OpenNew.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.new, text="New tab for new file")
+
+
+            # self.ImageOpenL = Image.open(os.path.join(self.assetPath, "Open.png"))
+            # self.ImageTkOpenL = ImageTk.PhotoImage(self.ImageOpenL)
+
+            # self.RibbonToolbar.openlocal = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.open_file, image=self.ImageTkOpenL)
+            # self.RibbonToolbar.openlocal.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.openlocal.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.openlocal, text="Open from local filesystem")
+
+            self.RibbonToolbar.maintab.OpenNew.openlocal = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "Open.png"), text="Open")
+            self.RibbonToolbar.maintab.OpenNew.openlocal["command"] = self.open_file
+            self.RibbonToolbar.maintab.OpenNew.openlocal = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.openlocal, text="Open from local filesystem")
+
+            # self.ImageWebRq = Image.open(os.path.join(self.assetPath, "WebRq.png"))
+            # self.ImageTkWebRq = ImageTk.PhotoImage(self.ImageWebRq)
+
+            # self.RibbonToolbar.WebRq = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.webrequest, image=self.ImageTkWebRq)
+            # self.RibbonToolbar.WebRq.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.WebRq.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.WebRq, text="Open by fecthing from web")
+
+            self.RibbonToolbar.maintab.OpenNew.WebRq = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "WebRq.png"), text="WebRequest")
+            self.RibbonToolbar.maintab.OpenNew.WebRq["command"] = self.webrequest
+            self.RibbonToolbar.maintab.OpenNew.WebRq = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.WebRq, text="Open by fecthing from web")
+        elif not win.args.exico and not self.config["TkEdit"]["exicon"]:
 
             self.RibbonToolbar.maintab.Editor = self.RibbonToolbar.maintab.create_h_group("Editor")
 
@@ -424,7 +492,14 @@ class Editor:
         self.RibbonToolbar.edittab.Insert.user["command"] = self.insertUsername
         self.RibbonToolbar.edittab.Insert.user.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Insert.user, text="Insert the current username at the current cursor position")
 
-        if not argparsev.exico:
+        if not argparsev.exico and not self.config["TkEdit"]["exicon"]:
+            self.RibbonMenu.add_command(label="New", command=self.new_file)
+            self.RibbonMenu.add_command(label="Open", command=self.open_file)
+            self.RibbonMenu.add_command(label="WebRequest", command=self.webrequest)
+            self.RibbonMenu.add_separator()
+            self.RibbonMenu.add_command(label="Close", command=self.close_tab)
+            self.RibbonMenu.add_command(label="Exit", command=self.exit)
+        elif argparsev.exico and not not self.config["TkEdit"]["exicon"]:
             self.RibbonMenu.add_command(label="New", command=self.new_file)
             self.RibbonMenu.add_command(label="Open", command=self.open_file)
             self.RibbonMenu.add_command(label="WebRequest", command=self.webrequest)
@@ -595,9 +670,15 @@ class Editor:
         # Create Text Editor Box
         thisfont = None
         if self.ods:
-            thisfont = self.odsfont
+            if self.config["TkEdit"]["ods"]:
+                thisfont = self.font
+            else:
+                thisfont = self.odsfont
         else:
-            thisfont=self.font
+            if self.config["TkEdit"]["ods"]:
+                thisfont=self.odsfont
+            else:
+                thisfont=self.font
 
         textbox = CustomText(frame, relief='sunken', borderwidth=0, wrap='none', font=thisfont)
         textbox.config(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, undo=True, autoseparators=True)
@@ -1020,16 +1101,20 @@ Pmw.initialise(win)
 # add dnd to window
 win.drop_target_register(tkdnd.DND_FILES)
 
+# add window data Directory
+win.datadir = os.path.join(os.path.expanduser('~'), ".MXPSQL-TkEdit")
+
 # make argument parser
 win.argparse = argparse.ArgumentParser()
 # optional store
 win.argparse.add_argument('-f', '--file', action='store', help="File input from command line with arguments", dest="file", type=str, default="", metavar="\"File path here\"")
-win.argparse.add_argument('-c', '--config', action='store', help="Config file to parse", dest="file", type=str, default="", metavar="\"Config file path here\"")
+win.argparse.add_argument('-c', '--config', action='store', help="Config file to parse", dest="config", type=str, default="", metavar="\"Config file path here\"")
 # optional yes no
-win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font', dest="ods", default=False)
-win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts', dest="mono", default=False)
-win.argparse.add_argument('-cmdbg', '--commanddebugger', action='store_true', help='view all command line arguments passed, including unwanted one', dest="cmdbg", default=False)
-win.argparse.add_argument('-exico', '--iconbutton', action='store_true', help='Show the icon buttons instead of using the drop down, use this if you want original behaviour', dest="exico", default=False)
+win.argparse.add_argument('-dr', '--reset-dir', action='store_true', help='Resets data folder', dest="dr", default=False)
+win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic". If opt is set on config, will do the opposite', dest="ods", default=False)
+win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts. If this opt is set on config, will do the opposite', dest="mono", default=False)
+win.argparse.add_argument('-cmdbg', '--commanddebugger', action='store_true', help='view all command line arguments passed, including unwanted one. If this opt is set on config, will do the opposite', dest="cmdbg", default=False)
+win.argparse.add_argument('-exico', '--iconbutton', action='store_true', help='Show the icon buttons instead of using the drop down, use this if you want original behaviour. If this opt is set on config, will do the opposite', dest="exico", default=False)
 # positional
 win.argparse.add_argument('dfile', action='store', help="File input for drag and drop, can be used also from the command line", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
 
@@ -1039,12 +1124,36 @@ sys.argv.pop(0)
 win.args, win.unknownargs = win.argparse.parse_known_args(sys.argv)
 sys.argv = win.argv
 
-if win.args.cmdbg:
-    print("Unwanted command line arguments: " + str(win.unknownargs))
-    print("Wanted command line arguments: " + str(win.args))
-
 
 # Read config file
+win.toml = None
+if win.args.dr:
+    try:
+        print("Mkdir folder")
+        os.mkdir(win.datadir)
+    except FileExistsError:
+        print("Nevermind that")
+    
+    print("Making file")
+    f = open(os.path.join(win.datadir, "Config.toml"), "w")
+    print("Writing to file")
+    f.write(str(toml.dumps(TomlResetContent)))
+    print("Closing file")
+    f.close()
+    sys.exit(0)
+
+if not win.args.config == "":
+    win.toml = toml.load(win.args.config)
+else:
+    win.toml = toml.load(os.path.join(win.datadir, "Config.toml"))
+
+# print unwanted args
+if win.args.cmdbg and not win.toml["TkEdit"]["cmdbg"]:
+    print("Unwanted command line arguments: " + str(win.unknownargs))
+    print("Wanted command line arguments: " + str(win.args))
+elif not win.args.cmdbg and not not win.toml["TkEdit"]["cmdbg"]:
+    print("Unwanted command line arguments: " + str(win.unknownargs))
+    print("Wanted command line arguments: " + str(win.args))
 
 # configuration
 # assets folder name
@@ -1080,7 +1189,7 @@ win.ods36 = None
 if win.args.mono:
     win.helv36 = tkf.Font(family="Microsoft Sans Serif Mono",size=8)
     win.ods36 = tkf.Font(family="OpenDyslexic Mono",size=8)
-else:
+elif not win.args.mono and not not win.toml["TkEdit"]["mono"]:
     win.helv36 = tkf.Font(family="Microsoft Sans Serif",size=8)
     win.ods36 = tkf.Font(family="OpenDyslexic",size=8)
 
@@ -1126,7 +1235,7 @@ win.withdraw()
 
 _default_root = win
 
-win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, customfont=win.args.cfont, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, argparsev=win.args, ods=win.args.ods, wtkstyle=win.wtkstyle, ttkstyle=win.ttkstyle)
+win.app = Editor(win, assetDir=win.asset, font=win.helv36, ods36=win.ods36, firstfile=win.args.file or win.args.dfile or None, srcurl=win.srcurl, argparsev=win.args, ods=win.args.ods, wtkstyle=win.wtkstyle, ttkstyle=win.ttkstyle, tomlcfg=win.toml)
 
 # register dnd to window
 win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") ))
@@ -1135,7 +1244,10 @@ win.dnd_bind('<<Drop>>', lambda e: win.app.openfs( e.data.strip("{").strip("}") 
 win.deiconify()
 
 # mainloop tk
-win.mainloop()
+try:
+    win.mainloop()
+except KeyboardInterrupt:
+    print("^C")
 
 # Exit
 sys.exit(0)
