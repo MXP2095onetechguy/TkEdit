@@ -82,6 +82,7 @@ import tkinter.font as tkf
 import tkinter.scrolledtext as tkst
 from PIL import Image, ImageTk, ImageGrab
 import os
+import toml
 from hashlib import md5
 import sys
 import requests
@@ -1022,10 +1023,10 @@ win.drop_target_register(tkdnd.DND_FILES)
 # make argument parser
 win.argparse = argparse.ArgumentParser()
 # optional store
-win.argparse.add_argument('-f', '--file', action='store', help="File input from command line with arguments", dest="file", type=str, default="", metavar="\"File here\"")
+win.argparse.add_argument('-f', '--file', action='store', help="File input from command line with arguments", dest="file", type=str, default="", metavar="\"File path here\"")
+win.argparse.add_argument('-c', '--config', action='store', help="Config file to parse", dest="file", type=str, default="", metavar="\"Config file path here\"")
 # optional yes no
 win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font', dest="ods", default=False)
-win.argparse.add_argument('-cfont', '--customfont', action='store_true', help='Use custom font, the default font is still helvetica or opendeslexic', dest="cfont", default=False)
 win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts', dest="mono", default=False)
 win.argparse.add_argument('-cmdbg', '--commanddebugger', action='store_true', help='view all command line arguments passed, including unwanted one', dest="cmdbg", default=False)
 win.argparse.add_argument('-exico', '--iconbutton', action='store_true', help='Show the icon buttons instead of using the drop down, use this if you want original behaviour', dest="exico", default=False)
@@ -1041,6 +1042,9 @@ sys.argv = win.argv
 if win.args.cmdbg:
     print("Unwanted command line arguments: " + str(win.unknownargs))
     print("Wanted command line arguments: " + str(win.args))
+
+
+# Read config file
 
 # configuration
 # assets folder name
