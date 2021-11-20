@@ -1156,7 +1156,12 @@ if win.args.gd:
 if not win.args.config == "":
     win.toml = toml.load(win.args.config)
 else:
-    win.toml = toml.load(os.path.join(win.datadir, "Config.toml"))
+    try:
+        win.toml = toml.load(os.path.join(win.datadir, "Config.toml"))
+    except FileNotFoundError:
+        print("Try to run this program with -rd, the config file does not exists and this program needs it. To know more, run this program with -h")
+        input("")
+        sys.exit(0)
 
 # print unwanted args
 if win.args.cmdbg and not win.toml["TkEdit"]["cmdbg"]:
