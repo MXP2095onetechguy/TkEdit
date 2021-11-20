@@ -1102,7 +1102,13 @@ Pmw.initialise(win)
 win.drop_target_register(tkdnd.DND_FILES)
 
 # add window data Directory
-win.datadir = os.path.join(os.path.expanduser('~'), ".MXPSQL-TkEdit")
+win.datadir = None
+try:
+    win.datadir = os.path.join(os.path.expanduser('~'), ".MXPSQL-TkEdit")
+except FileNotFoundError:
+    print("Try to run this program with -rd, the data directory does not exists and this program needs it. To know more, run this program with -h")
+    input("")
+    sys.exit(0)
 
 # make argument parser
 win.argparse = argparse.ArgumentParser()
