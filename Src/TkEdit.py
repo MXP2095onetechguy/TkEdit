@@ -1111,6 +1111,7 @@ win.argparse.add_argument('-f', '--file', action='store', help="File input from 
 win.argparse.add_argument('-c', '--config', action='store', help="Config file to parse", dest="config", type=str, default="", metavar="\"Config file path here\"")
 # optional yes no
 win.argparse.add_argument('-dr', '--reset-dir', action='store_true', help='Resets data folder', dest="dr", default=False)
+win.argparse.add_argument('-gd', '--get-dir', action='store_true', help='Get the path of the data folder', dest="gd", default=False)
 win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic". If opt is set on config, will do the opposite', dest="ods", default=False)
 win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts. If this opt is set on config, will do the opposite', dest="mono", default=False)
 win.argparse.add_argument('-cmdbg', '--commanddebugger', action='store_true', help='view all command line arguments passed, including unwanted one. If this opt is set on config, will do the opposite', dest="cmdbg", default=False)
@@ -1140,6 +1141,10 @@ if win.args.dr:
     f.write(str(toml.dumps(TomlResetContent)))
     print("Closing file")
     f.close()
+    sys.exit(0)
+
+if win.args.gd:
+    print("Data Dir: " + win.datadir)
     sys.exit(0)
 
 if not win.args.config == "":
