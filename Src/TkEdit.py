@@ -1021,11 +1021,15 @@ win.drop_target_register(tkdnd.DND_FILES)
 
 # make argument parser
 win.argparse = argparse.ArgumentParser()
+# optional store
 win.argparse.add_argument('-f', '--file', action='store', help="File input from command line with arguments", dest="file", type=str, default="", metavar="\"File here\"")
+# optional yes no
 win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font', dest="ods", default=False)
 win.argparse.add_argument('-cfont', '--customfont', action='store_true', help='Use custom font, the default font is still helvetica or opendeslexic', dest="cfont", default=False)
 win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts', dest="mono", default=False)
+win.argparse.add_argument('-cmdbg', '--commanddebugger', action='store_true', help='view all command line arguments passed, including unwanted one', dest="cmdbg", default=False)
 win.argparse.add_argument('-exico', '--iconbutton', action='store_true', help='Show the icon buttons instead of using the drop down, use this if you want original behaviour', dest="exico", default=False)
+# positional
 win.argparse.add_argument('dfile', action='store', help="File input for drag and drop, can be used also from the command line", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
 
 # parse args
@@ -1033,6 +1037,10 @@ win.argv = sys.argv
 sys.argv.pop(0)
 win.args, win.unknownargs = win.argparse.parse_known_args(sys.argv)
 sys.argv = win.argv
+
+if win.args.cmdbg:
+    print("Unwanted command line arguments: " + str(win.unknownargs))
+    print("Wanted command line arguments: " + str(win.args))
 
 # configuration
 # assets folder name
