@@ -1159,7 +1159,7 @@ else:
     try:
         win.toml = toml.load(os.path.join(win.datadir, "Config.toml"))
     except FileNotFoundError:
-        print("Try to run this program with -rd, the config file does not exists and this program needs it. To know more, run this program with -h")
+        print("Try to run this program with -rd, the config file does not exists and this program needs it. To know more, run this program with '-h'. You can press enter now to exit.")
         input("")
         sys.exit(0)
 
