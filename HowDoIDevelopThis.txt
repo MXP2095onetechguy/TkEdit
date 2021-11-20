@@ -1,0 +1,3 @@
+You might ask how do I develop this program, so let me tell you.
+
+I develop this code on a windows machine. I test this program on a linux machine by git pulling the source code, if there is a problem running there, I edit it on the windows machine.

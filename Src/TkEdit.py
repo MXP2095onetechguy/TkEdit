@@ -266,10 +266,10 @@ class Editor:
         self.RibbonUI.pack()
 
         self.RibbonToolbar = self.RibbonUI.getRibbon()
+        self.RibbonMenu = self.RibbonUI.getMenu()
         self.RibbonUI_pack()
 
         self.RibbonToolbar.maintab = self.RibbonToolbar.add_tab('Main Document')
-        self.RibbonToolbar.maintab.Editor = self.RibbonToolbar.maintab.create_h_group("Editor")
 
 
 
@@ -282,59 +282,64 @@ class Editor:
         self.RibbonUI.bind('<Button-3>', self.right_click_toolbar)
         self.RibbonToolbar.bind('<Button-3>', self.right_click_toolbar)
 
-        self.RibbonToolbar.maintab.Editor.exit = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Exit.png"), text="Exit")
-        self.RibbonToolbar.maintab.Editor.exit["command"] = self.exit
-        # self.RibbonToolbar.exit.pack(side=tk.LEFT, padx=2, pady=2)
-        self.RibbonToolbar.maintab.Editor.exit.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.exit, text="Exit the editor")
+        if argparsev.exico:
 
-        # self.ImageClose = Image.open(os.path.join(self.assetPath, "Close.png"))
-        # self.ImageTkClose = ImageTk.PhotoImage(self.ImageClose)
+            self.RibbonToolbar.maintab.Editor = self.RibbonToolbar.maintab.create_h_group("Editor")
 
-        # self.RibbonToolbar.close = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.close_tab, image=self.ImageTkClose)
-        # self.RibbonToolbar.close.pack(side=tk.LEFT, padx=2, pady=2)
-        # self.RibbonToolbar.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.close, text="Close the open tab", waittime=250)
-        self.RibbonToolbar.maintab.Editor.close = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Close.png"), text="Close")
-        self.RibbonToolbar.maintab.Editor.close["command"] = self.close_tab
-        self.RibbonToolbar.maintab.Editor.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.close, text="Close the open tab", waittime=250)
+            self.RibbonToolbar.maintab.Editor.exit = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Exit.png"), text="Exit")
+            self.RibbonToolbar.maintab.Editor.exit["command"] = self.exit
+            # self.RibbonToolbar.exit.pack(side=tk.LEFT, padx=2, pady=2)
+            self.RibbonToolbar.maintab.Editor.exit.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.exit, text="Exit the editor")
 
-        # self.RibbonToolbar.separator = tk.Label(self.RibbonToolbar, text="|")
-        # self.RibbonToolbar.separator.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.ImageClose = Image.open(os.path.join(self.assetPath, "Close.png"))
+            # self.ImageTkClose = ImageTk.PhotoImage(self.ImageClose)
 
-        # self.ImageNew = Image.open(os.path.join(self.assetPath, "New.png"))
-        # self.ImageTkNew = ImageTk.PhotoImage(self.ImageNew)
+            # self.RibbonToolbar.close = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.close_tab, image=self.ImageTkClose)
+            # self.RibbonToolbar.close.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.close, text="Close the open tab", waittime=250)
+            self.RibbonToolbar.maintab.Editor.close = self.RibbonToolbar.maintab.Editor.create_toolbar_item(os.path.join(self.assetPath, "Close.png"), text="Close")
+            self.RibbonToolbar.maintab.Editor.close["command"] = self.close_tab
+            self.RibbonToolbar.maintab.Editor.close.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.Editor.close, text="Close the open tab", waittime=250)
+            
 
-        self.RibbonToolbar.maintab.OpenNew = self.RibbonToolbar.maintab.create_h_group("Open and New")
+            # self.RibbonToolbar.separator = tk.Label(self.RibbonToolbar, text="|")
+            # self.RibbonToolbar.separator.pack(side=tk.LEFT, padx=2, pady=2)
 
-        # self.RibbonToolbar.new = tk.Button(self.RibbonToolbar, relief=tk.FLAT, image=self.ImageTkNew, command=self.new_file)
-        # self.RibbonToolbar.new.pack(side=tk.LEFT, padx=2, pady=2)
-        # self.RibbonToolbar.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.new, text="New tab for new file")
+            # self.ImageNew = Image.open(os.path.join(self.assetPath, "New.png"))
+            # self.ImageTkNew = ImageTk.PhotoImage(self.ImageNew)
 
-        self.RibbonToolbar.maintab.OpenNew.new = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "New.png"), text="New")
-        self.RibbonToolbar.maintab.OpenNew.new["command"] = self.new_file
-        self.RibbonToolbar.maintab.OpenNew.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.new, text="New tab for new file")
+            self.RibbonToolbar.maintab.OpenNew = self.RibbonToolbar.maintab.create_h_group("Open and New")
+
+            # self.RibbonToolbar.new = tk.Button(self.RibbonToolbar, relief=tk.FLAT, image=self.ImageTkNew, command=self.new_file)
+            # self.RibbonToolbar.new.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.new, text="New tab for new file")
+
+            self.RibbonToolbar.maintab.OpenNew.new = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "New.png"), text="New")
+            self.RibbonToolbar.maintab.OpenNew.new["command"] = self.new_file
+            self.RibbonToolbar.maintab.OpenNew.new.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.new, text="New tab for new file")
 
 
-        # self.ImageOpenL = Image.open(os.path.join(self.assetPath, "Open.png"))
-        # self.ImageTkOpenL = ImageTk.PhotoImage(self.ImageOpenL)
+            # self.ImageOpenL = Image.open(os.path.join(self.assetPath, "Open.png"))
+            # self.ImageTkOpenL = ImageTk.PhotoImage(self.ImageOpenL)
 
-        # self.RibbonToolbar.openlocal = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.open_file, image=self.ImageTkOpenL)
-        # self.RibbonToolbar.openlocal.pack(side=tk.LEFT, padx=2, pady=2)
-        # self.RibbonToolbar.openlocal.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.openlocal, text="Open from local filesystem")
+            # self.RibbonToolbar.openlocal = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.open_file, image=self.ImageTkOpenL)
+            # self.RibbonToolbar.openlocal.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.openlocal.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.openlocal, text="Open from local filesystem")
 
-        self.RibbonToolbar.maintab.OpenNew.openlocal = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "Open.png"), text="Open")
-        self.RibbonToolbar.maintab.OpenNew.openlocal["command"] = self.open_file
-        self.RibbonToolbar.maintab.OpenNew.openlocal = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.openlocal, text="Open from local filesystem")
+            self.RibbonToolbar.maintab.OpenNew.openlocal = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "Open.png"), text="Open")
+            self.RibbonToolbar.maintab.OpenNew.openlocal["command"] = self.open_file
+            self.RibbonToolbar.maintab.OpenNew.openlocal = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.openlocal, text="Open from local filesystem")
 
-        # self.ImageWebRq = Image.open(os.path.join(self.assetPath, "WebRq.png"))
-        # self.ImageTkWebRq = ImageTk.PhotoImage(self.ImageWebRq)
+            # self.ImageWebRq = Image.open(os.path.join(self.assetPath, "WebRq.png"))
+            # self.ImageTkWebRq = ImageTk.PhotoImage(self.ImageWebRq)
 
-        # self.RibbonToolbar.WebRq = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.webrequest, image=self.ImageTkWebRq)
-        # self.RibbonToolbar.WebRq.pack(side=tk.LEFT, padx=2, pady=2)
-        # self.RibbonToolbar.WebRq.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.WebRq, text="Open by fecthing from web")
+            # self.RibbonToolbar.WebRq = tk.Button(self.RibbonToolbar, relief=tk.FLAT, command=self.webrequest, image=self.ImageTkWebRq)
+            # self.RibbonToolbar.WebRq.pack(side=tk.LEFT, padx=2, pady=2)
+            # self.RibbonToolbar.WebRq.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.WebRq, text="Open by fecthing from web")
 
-        self.RibbonToolbar.maintab.OpenNew.WebRq = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "WebRq.png"), text="WebRequest")
-        self.RibbonToolbar.maintab.OpenNew.WebRq["command"] = self.webrequest
-        self.RibbonToolbar.maintab.OpenNew.WebRq = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.WebRq, text="Open by fecthing from web")
+            self.RibbonToolbar.maintab.OpenNew.WebRq = self.RibbonToolbar.maintab.OpenNew.create_toolbar_item(os.path.join(self.assetPath, "WebRq.png"), text="WebRequest")
+            self.RibbonToolbar.maintab.OpenNew.WebRq["command"] = self.webrequest
+            self.RibbonToolbar.maintab.OpenNew.WebRq = tooltip.CreateToolTip(self.RibbonToolbar.maintab.OpenNew.WebRq, text="Open by fecthing from web")
 
         # self.RibbonToolbar.separator2 = tk.Label(self.RibbonToolbar, text="|")
         # self.RibbonToolbar.separator2.pack(side=tk.LEFT, padx=2, pady=2)
@@ -417,6 +422,19 @@ class Editor:
         self.RibbonToolbar.edittab.Insert.user = self.RibbonToolbar.edittab.Insert.create_toolbar_item(os.path.join(self.assetPath, "instuser.png"), text="Insert Username")
         self.RibbonToolbar.edittab.Insert.user["command"] = self.insertUsername
         self.RibbonToolbar.edittab.Insert.user.tooltip = tooltip.CreateToolTip(self.RibbonToolbar.edittab.Insert.user, text="Insert the current username at the current cursor position")
+
+        if not argparsev.exico:
+            self.RibbonMenu.add_command(label="New", command=self.new_file)
+            self.RibbonMenu.add_command(label="Open", command=self.open_file)
+            self.RibbonMenu.add_command(label="WebRequest", command=self.webrequest)
+            self.RibbonMenu.add_separator()
+            self.RibbonMenu.add_command(label="Close", command=self.close_tab)
+            self.RibbonMenu.add_command(label="Exit", command=self.exit)
+
+
+
+
+
 
         
         self.filetypes = (("Normal text file", "*.txt"), ("all files", "*.*"))
@@ -1007,6 +1025,7 @@ win.argparse.add_argument('-f', '--file', action='store', help="File input from 
 win.argparse.add_argument('-ods', '--opendyslexic', action='store_true', help='Use "OpenDyslexic" font', dest="ods", default=False)
 win.argparse.add_argument('-cfont', '--customfont', action='store_true', help='Use custom font, the default font is still helvetica or opendeslexic', dest="cfont", default=False)
 win.argparse.add_argument('-mono', '--monospace', action='store_true', help='Use monospace fonts', dest="mono", default=False)
+win.argparse.add_argument('-exico', '--iconbutton', action='store_true', help='Show the icon buttons instead of using the drop down, use this if you want original behaviour', dest="exico", default=False)
 win.argparse.add_argument('dfile', action='store', help="File input for drag and drop, can be used also from the command line", type=str, default=None, metavar="\"Drag and drop file here\"", nargs="?")
 
 # parse args
